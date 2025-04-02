@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+// moshow pages.
 import './style.dart' as style;
 import './home.dart';
-//-----------------------------------------------------------------------------
+import './collect.dart';
+
+
+///////////////////////////////////////////////////////////////////////////////
 void main() {
   runApp(MaterialApp(
       theme: style.theme,
@@ -13,7 +17,7 @@ void main() {
   );
 }
 
-//-----------------------------------------------------------------------------
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -21,25 +25,25 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-//-----------------------------------------------------------------------------
 class _MyAppState extends State<MyApp> {
 
-
-  var stateTab = 0;
-  dynamic stateItem = [];
+  var stateTabIndex = 0;
+  dynamic stateHomeData = [];
   
-  getData() async{
+  //-------------------------------------------------------------------------
+  void getData() async{
     String jsonurl = 'https://codingapple1.github.io/app/data.json';
     var result = await http.get(Uri.parse(jsonurl));
     var json = jsonDecode(result.body);
     
     setState(() {
-      stateItem = json;
+      stateHomeData = json;
     });
     
     print(json[0]);
   }
 
+  //-------------------------------------------------------------------------
   @override
   void initState() {    
     super.initState();
@@ -47,6 +51,7 @@ class _MyAppState extends State<MyApp> {
     getData();
   }
 
+  //-------------------------------------------------------------------------
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -61,15 +66,24 @@ class _MyAppState extends State<MyApp> {
           )
         ]
       ),
-      
-      body: [ Home(items: stateItem), Text('두번째 탭'),Text('세번째 탭'),Text('네번째 탭'),][stateTab],
+       
+      body: [ 
+        Home(datas: stateHomeData),
+        Text('마켓', style: Theme.of(context).textTheme.labelLarge,),        
+        Collect(datas: stateHomeData),
+        Text('계 정', style: Theme.of(context).textTheme.labelLarge),
+      ][stateTabIndex],
 
       bottomNavigationBar: BottomNavigationBar(
+        // update 현재 탭.
+        currentIndex: stateTabIndex,
+
         onTap: (int i){
           setState(() {
-            stateTab = i;
+            stateTabIndex = i;
           });
         },
+        
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: '홈'),
           BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: '마켓'),
@@ -80,4 +94,7 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
+  //-------------------------------------------------------------------------
 }
+
+
