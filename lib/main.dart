@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import './style.dart' as style;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
+import './style.dart' as style;
+import './home.dart';
 //-----------------------------------------------------------------------------
 void main() {
   runApp(MaterialApp(
@@ -21,8 +24,29 @@ class MyApp extends StatefulWidget {
 //-----------------------------------------------------------------------------
 class _MyAppState extends State<MyApp> {
 
-  var tab = 0;
+
+  var stateTab = 0;
+  dynamic stateItem = [];
   
+  getData() async{
+    String jsonurl = 'https://codingapple1.github.io/app/data.json';
+    var result = await http.get(Uri.parse(jsonurl));
+    var json = jsonDecode(result.body);
+    
+    setState(() {
+      stateItem = json;
+    });
+    
+    print(json[0]);
+  }
+
+  @override
+  void initState() {    
+    super.initState();
+
+    getData();
+  }
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -38,12 +62,12 @@ class _MyAppState extends State<MyApp> {
         ]
       ),
       
-      body: [Text('첫번째 탭'), Text('두번째 탭'),Text('세번째 탭'),Text('네번째 탭'),][tab],
+      body: [ Home(items: stateItem), Text('두번째 탭'),Text('세번째 탭'),Text('네번째 탭'),][stateTab],
 
       bottomNavigationBar: BottomNavigationBar(
         onTap: (int i){
           setState(() {
-            tab = i;
+            stateTab = i;
           });
         },
         items: [
@@ -57,5 +81,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-//-----------------------------------------------------------------------------
