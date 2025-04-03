@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 var theme = ThemeData(
         iconTheme: IconThemeData(color:Colors.blue.shade300),
-        
+
+        //splashColor: Colors.transparent,
+        //highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
         splashFactory: NoSplash.splashFactory, // ✅ 터치 애니메이션 제거
-        
+
         appBarTheme: AppBarTheme(
           color: const Color.fromARGB(255, 228, 243, 253),
           elevation: 1,

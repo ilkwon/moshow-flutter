@@ -1,32 +1,62 @@
 import 'package:flutter/material.dart';
 import './shared.dart';
 
-// ignore: must_be_immutable
-class Collect extends StatelessWidget {
-  Collect({super.key, this.datas});
+
+class Collect extends StatefulWidget {
+  Collect({super.key
+    , this.datas
+    , this.scroll
+    , this.loading
+    , this.hasMore
+  });
+
   final datas;
-  
+  final scroll;
+  final bool? loading;
+  final bool? hasMore;
+
+  @override
+  State<Collect> createState() => _CollectState();
+}
+
+class _CollectState extends State<Collect> {
 
   //-------------------------------------------------------------------------
   @override  
-  Widget build(BuildContext context) {
-    if (Shared.hasValue(datas)){
-      return ListView.builder(itemCount: datas.length, itemBuilder:(c,i){
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Image.network(datas[i]['image']),
-            SizedBox(height: 8),
-            Text('❤️ ${datas[i]['likes']}개'),
-            Text('@${datas[i]['user']}', style: TextStyle(fontWeight: FontWeight.bold)),
-            Text(datas[i]['content']),
-          ],
+  Widget build(BuildContext context) 
+  {
+    if (Shared.hasValue(widget.datas)){
+      return ListView.builder(itemCount: widget.datas.length + 1
+      , controller: widget.scroll
+      , itemBuilder:(context, i){
+        if (i == widget.datas.length){ 
+          if (true == widget.loading && true == widget.hasMore){
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          } else {
+            return const SizedBox.shrink(); // 더이상 로딩할게 없으면 아무것도 표시 안함.
+          }
+        }
+
+        // 일반 데이터 아이템
+        return Padding(
+          padding: const EdgeInsets.all(12.0), 
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Image.network(widget.datas[i]['image']),
+              SizedBox(height: 8),
+              Text('❤️ ${ widget.datas[i]['likes'] }개'),
+              Text('@${ widget.datas[i]['user'] }', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(widget.datas[i]['content']),
+            ],  
+          ),
         );
       });
     } else {
-      return Text('Now Loading...');
+      return const Center(child: Text('Now Loading...'));
     }
   }
- 
-  //-------------------------------------------------------------------------
 }
