@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter/rendering.dart';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:moshow/pop_modal.dart';
 import 'dart:io';
 
 // moshow pages.
@@ -101,25 +101,11 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('모두의 쇼케이스'), actions: [
-        IconButton(
-          icon: Icon(Icons.add_box_outlined),
-          iconSize: 30,
-          onPressed: () async {
-            var picker = ImagePicker();
-            var image = await picker.pickImage(source: ImageSource.gallery);
-            if (image != null) {
-              setState(() {
-                userImage = File(image.path);
-              });
-            }
-
-            // ignore: use_build_context_synchronously
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (c) => Upload(selectImage: userImage)));
-          },
-        )
+        //IconButton(
+        //  icon: Icon(Icons.add_box_outlined),
+        //  iconSize: 30,
+        //  onPressed: () {},
+        //)
       ]),
       body: (stateTabIndex == 2) ? SizedBox.shrink() // 등록되지 않은 화면 띄우지 않기.
       : [
@@ -191,28 +177,4 @@ class _MyAppState extends State<MyApp> {
     );
   }
   //-------------------------------------------------------------------------
-}
-
-class PopModal extends StatelessWidget {
-  const PopModal({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 200,
-      padding: EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Text('새 콘텐츠 등록하기', style: TextStyle(fontSize: 18)),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context); // 모달 닫기
-              // 등록 동작 실행
-            },
-            child: Text('사진 선택'),
-          )
-        ],
-      ),
-    );
-  }
 }
