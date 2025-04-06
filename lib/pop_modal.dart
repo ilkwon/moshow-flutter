@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+
 import 'package:moshow/upload.dart';
 
 class PopModal extends StatelessWidget {
-  const PopModal({super.key});
-
+  PopModal({super.key, this.onAdd});
+  final Function(Map<String, dynamic>)? onAdd;
+  
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -20,8 +21,6 @@ class PopModal extends StatelessWidget {
               final image = await picker.pickImage(source: ImageSource.gallery);
 
               if (image != null) {
-                
-
                 // 모달 닫고 → 다음 프레임에 push
                 Navigator.pop(context);
 
@@ -30,7 +29,10 @@ class PopModal extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (c) => Upload(selectImage: image),
+                      builder: (c) => Upload(
+                        selectImage: image,                        
+                         onAdd: onAdd,
+                      ),
                     ),
                   );
                 });

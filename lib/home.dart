@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import './shared.dart';
 
 // ignore: must_be_immutable
 class Home extends StatelessWidget {
@@ -9,7 +8,7 @@ class Home extends StatelessWidget {
   //-------------------------------------------------------------------------
   @override  
   Widget build(BuildContext context) {
-    if (Shared.hasValue(datas)){
+    if (datas != null){
       return ListView.builder(itemCount: 2, itemBuilder:(c,i){
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
