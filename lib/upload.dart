@@ -32,7 +32,7 @@ class _UploadState extends State<Upload> {
       widget.onAdd!(rowData);
     }
 
-    Navigator.pop(context); // 업로드 완료 후 돌아가기
+    Navigator.pop(context, true); // 업로드완료 후 돌아가기 결과 true 리턴.
   }
 
   //-------------------------------------------------------------------------

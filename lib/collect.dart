@@ -1,6 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import './shared.dart';
-
+import 'common/shared.dart';
+import './profile.dart';
 
 class Collect extends StatefulWidget {
   Collect({super.key
@@ -49,7 +50,13 @@ class _CollectState extends State<Collect> {
               Image.network(widget.datas[i]['image']),
               SizedBox(height: 8),
               Text('❤️ ${ widget.datas[i]['likes'] }개'),
-              Text('@${ widget.datas[i]['user'] }', style: TextStyle(fontWeight: FontWeight.bold)),
+              GestureDetector(
+                child:Text('@${widget.datas[i]['user']}'),
+                onTap:(){
+                  Navigator.push(context, CupertinoPageRoute(builder: (c) => Profile()));
+                },                               
+              ),
+                
               Text(widget.datas[i]['content']),
             ],  
           ),
@@ -60,3 +67,4 @@ class _CollectState extends State<Collect> {
     }
   }
 }
+

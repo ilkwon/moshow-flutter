@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:moshow/common/define.dart';
 import 'dart:convert';
 import 'package:moshow/pop_modal.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 // moshow pages.
-import './shared.dart';
+import 'common/shared.dart';
 import './style.dart' as style;
 import './home.dart';
 import './collect.dart';
 
 ///////////////////////////////////////////////////////////////////////////////
 void main() {
-  runApp(MaterialApp(theme: style.theme, home: MyApp()));
+  runApp(
+    ChangeNotifierProvider(create: (c) => StoreProvider(),
+    child: MaterialApp(theme: style.theme, home: MyApp()),)
+    );
 }
 
 class MyApp extends StatefulWidget {
@@ -27,7 +33,7 @@ class _MyAppState extends State<MyApp> {
     'https://codingapple1.github.io/app/data.json',
     'https://codingapple1.github.io/app/more1.json'
   ];
-  int pageSize = 3;
+  int pageSizeFromJosnData = 3;
   bool isLoading = false;
   bool hasMore = true;
 
@@ -38,7 +44,18 @@ class _MyAppState extends State<MyApp> {
   
   var stateScroll = ScrollController();
   var userImage;
-  
+  //-------------------------------------------------------------------------
+  void saveData() async {
+    var storage = await SharedPreferences.getInstance();
+    storage.setString('name', 'ilkwon.');
+    var name = storage.getString('name');
+
+    var map = {'age': 20};
+    storage.setString('map', jsonEncode(map));
+    var result = storage.getString('map') ?? '없는데요';
+    print(jsonDecode(result)['age']);
+
+  }
   //-------------------------------------------------------------------------
   @override
   void initState() {
@@ -60,9 +77,8 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('모두의 쇼케이스')),
-      body: (tabIndex == 2)
-          ? SizedBox.shrink() // 등록되지 않은 화면 띄우지 않기.
+      appBar: AppBar(title: Text(appName)),
+      body: (tabIndex == TabType.upload.index) ? SizedBox.shrink() // 등록되지 않은 화면 띄우지 않기.
           : [
               Home(datas: homeData),
               Text(
@@ -80,19 +96,30 @@ class _MyAppState extends State<MyApp> {
       bottomNavigationBar: BottomNavigationBar(
           // update 현재 탭.
           currentIndex: tabIndex,
-          onTap: (int i) {
-            if (i == 2) {
+          onTap: (int i) async {
+            if (i == TabType.upload.index) {
               Shared.log('등록 탭이 눌림');
               // Show Popup.
-              showModalBottomSheet(
+              var result = await showModalBottomSheet(
                   context: context,
                   builder: (BuildContext context) => PopModal(
                     onAdd: (newData){
-                      setState(() {
-                        collectData.insert(0, newData);
-                      });
-                    }
-                  ));
+                      setState(() { collectData.insert(0, newData); });
+                    }, 
+                    onCompleteToCollect: () {
+                      // 모달 닫을 때 전달값으로 'goToCollect'를 넘김
+                      Navigator.of(context).pop('goToCollect');
+                    },
+                ));
+
+                if (result == 'goToCollect') {
+                  WidgetsBinding.instance.addPostFrameCallback((_){
+                    Shared.log('result == goToCollect ########');
+                    setState(() {
+                      tabIndex = TabType.collection.index; // ✅ 자동으로 컬렉션 탭으로 이동
+                    });
+                  });
+                }
             } else {
               setState(() {
                 tabIndex = i;
@@ -105,30 +132,8 @@ class _MyAppState extends State<MyApp> {
             BottomNavigationBarItem(
                 icon: Icon(Icons.shopping_bag), label: '마켓'),
 
-            // 등록처럼 보이게 커스텀
-            BottomNavigationBarItem(
-              icon: IgnorePointer(
-                  child: Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.blue,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 8,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.add,
-                        color: Colors.white,
-                        size: 32,
-                      ))),
-              label: '등록',
-            ),
+            style.BottomNavigation.uploadButtonNavItem(),  // 등록 버튼.
+            
             BottomNavigationBarItem(
                 icon: Icon(Icons.video_collection), label: '컬렉션'),
             BottomNavigationBarItem(
@@ -159,7 +164,7 @@ class _MyAppState extends State<MyApp> {
         setState(() {
           if (json is List) {
             collectData.addAll(json);
-            hasMore = json.length >= pageSize;
+            hasMore = json.length >= pageSizeFromJosnData;
           } else if (json is Map) {
             collectData.add(json);
             hasMore = false; // Map 하나만 온 경우는 더 이상 없음
@@ -179,4 +184,13 @@ class _MyAppState extends State<MyApp> {
     isLoading = false;
   }
   //-------------------------------------------------------------------------
+}
+
+class StoreProvider extends ChangeNotifier{
+  var name = 'John Kim';
+
+  void changeName(){
+    name = 'john park';
+    notifyListeners();
+  }
 }

@@ -4,8 +4,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:moshow/upload.dart';
 
 class PopModal extends StatelessWidget {
-  PopModal({super.key, this.onAdd});
+  PopModal({super.key, this.onAdd, this.onCompleteToCollect});
   final Function(Map<String, dynamic>)? onAdd;
+  final Function()? onCompleteToCollect;
   
   @override
   Widget build(BuildContext context) {
@@ -21,12 +22,8 @@ class PopModal extends StatelessWidget {
               final image = await picker.pickImage(source: ImageSource.gallery);
 
               if (image != null) {
-                // 모달 닫고 → 다음 프레임에 push
-                Navigator.pop(context);
-
-                Future.microtask(() {
-                  //final selectedImage = File(image.path);
-                  Navigator.push(
+                Future.microtask(() async {                  
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (c) => Upload(
@@ -35,6 +32,9 @@ class PopModal extends StatelessWidget {
                       ),
                     ),
                   );
+                  if (result == true) {
+                    onCompleteToCollect?.call();
+                  } 
                 });
               } else {
                 // 사용자가 이미지 선택을 취소한 경우

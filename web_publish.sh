@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo "🚀 Flutter Web 자동 배포 시작!"
+rm -rf build/web
 
 flutter build web
 cd build/web

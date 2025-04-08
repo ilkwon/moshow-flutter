@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+//-------------------------------------------------------------------------
 var theme = ThemeData(
         iconTheme: IconThemeData(color:Colors.blue.shade300),
 
@@ -33,3 +34,33 @@ var theme = ThemeData(
           bodyMedium: TextStyle(fontSize: 16, color: Colors.grey.shade900),
         ),
       );
+//---------------------------------------------------------------------------
+class BottomNavigation {
+  static BottomNavigationBarItem uploadButtonNavItem() {
+    return BottomNavigationBarItem(
+      icon: IgnorePointer(
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.blue,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.add,
+            color: Colors.white,
+            size: 32,
+          ),
+        ),
+      ),
+      label: '',
+    );
+  }
+}
