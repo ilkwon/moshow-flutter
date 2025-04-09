@@ -1,50 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:moshow/common/define.dart';
+import 'package:moshow/pop_modal_collection.dart';
+import 'package:moshow/pop_modal_market.dart';
 
 import 'package:moshow/upload.dart';
 
-class PopModal extends StatelessWidget {
-  PopModal({super.key, this.onAdd, this.onCompleteToCollect});
+class PopupFactory{
+  static Widget getModalContext(TabType tabType, {
+    required Function(Map<String, dynamic>) onAdd,
+    required VoidCallback onCompleteToCollect,
+    }){
+      switch (tabType) {
+        case TabType.market:
+          return PopModalMarket(
+            onAdd: onAdd,
+            onComplete: onCompleteToCollect,
+          );
+        case TabType.collection:
+          return PopModalCollection(
+            onAdd: onAdd,
+            onComplete: onCompleteToCollect,
+          );
+        default:
+          return PopModalDefault(
+            onComplete: () {}
+          );
+    }
+  }
+}
+
+class PopModalDefault extends StatelessWidget 
+{
+  PopModalDefault({super.key, this.onAdd, this.onComplete});
   final Function(Map<String, dynamic>)? onAdd;
-  final Function()? onCompleteToCollect;
+  final Function()? onComplete;
   
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 200,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          const Text('새 콘텐츠 등록하기', style: TextStyle(fontSize: 18)),
-          ElevatedButton(
-            onPressed: () async {
-              final picker = ImagePicker();
-              final image = await picker.pickImage(source: ImageSource.gallery);
-
-              if (image != null) {
-                Future.microtask(() async {                  
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (c) => Upload(
-                        selectImage: image,                        
-                         onAdd: onAdd,
-                      ),
-                    ),
-                  );
-                  if (result == true) {
-                    onCompleteToCollect?.call();
-                  } 
-                });
-              } else {
-                // 사용자가 이미지 선택을 취소한 경우
-                Navigator.pop(context); // 그냥 모달만 닫기
-              }
-            },
-            child: const Text('사진 선택'),
-          )
-        ],
-      ),
-    );
+    return Column(
+          mainAxisSize: MainAxisSize.min, // ✅ 내용 높이에 맞게 조절
+          children: [
+            const Text(
+              '기본 팝업',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {},
+              child: const Text('미정 1'),
+              
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {},
+              child: const Text('미정 2'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // 닫기
+              },
+              child: const Text('닫기'),
+            ),
+          ],
+        );
   }
 }
