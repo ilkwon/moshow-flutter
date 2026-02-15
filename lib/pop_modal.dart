@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:moshow/common/define.dart';
 import 'package:moshow/pop_modal_collection.dart';
 import 'package:moshow/pop_modal_market.dart';
 
-import 'package:moshow/upload.dart';
 
 class PopupFactory{
   static Widget getModalContext(TabType tabType, {

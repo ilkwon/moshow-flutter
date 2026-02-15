@@ -24,14 +24,17 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (c) => StoreProvider()),  
-      ],    
-      child: MaterialApp(theme: style.theme, home: MyApp())
-    )
-  );
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (c) => StoreProvider()),
+    ],
+    child: MaterialApp(
+      theme: style.theme.copyWith(
+        textTheme: style.theme.textTheme.apply(fontFamily: 'NotoSansKR'),
+      ),
+      home: MyApp(),
+    ),
+  ));
 }
 
 class MyApp extends StatefulWidget {
@@ -42,7 +45,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  
   var urls = [
     'https://codingapple1.github.io/app/data.json',
     'https://codingapple1.github.io/app/more1.json'
@@ -55,7 +57,7 @@ class _MyAppState extends State<MyApp> {
   var tabIndex = 0;
   dynamic homeData = [];
   dynamic collectData = [];
-  
+
   var stateScroll = ScrollController();
   var userImage;
   //-------------------------------------------------------------------------
@@ -68,8 +70,8 @@ class _MyAppState extends State<MyApp> {
     storage.setString('map', jsonEncode(map));
     var result = storage.getString('map') ?? '없는데요';
     print(jsonDecode(result)['age']);
-
   }
+
   //-------------------------------------------------------------------------
   @override
   void initState() {
@@ -92,7 +94,8 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(appName)),
-      body: (tabIndex == TabType.upload.index) ? SizedBox.shrink() // 등록되지 않은 화면 띄우지 않기.
+      body: (tabIndex == TabType.upload.index)
+          ? SizedBox.shrink() // 등록되지 않은 화면 띄우지 않기.
           : [
               Home(datas: homeData),
               Text(
@@ -123,34 +126,37 @@ class _MyAppState extends State<MyApp> {
           items: BottomNavItems.items),
     );
   }
+
   //-------------------------------------------------------------------------
-  void processPopupModal(int index) async 
-  {
+  void processPopupModal(int index) async {
     final tabType = TabType.values[tabIndex];
     // Show Popup.
     var result = await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true, // ✅ 높이 컨트롤 허용
-      builder: (BuildContext context) => PopupFactory.getModalContext(tabType,
-        onAdd: (newData){
-          setState(() { collectData.insert(0, newData); });
-        }, 
-        onCompleteToCollect: () {
-          // 모달 닫을 때 전달값으로 'goToCollect'를 넘김
-          Navigator.of(context).pop('goToCollect');
-        },
-      ));
+        context: context,
+        isScrollControlled: true, // ✅ 높이 컨트롤 허용
+        builder: (BuildContext context) => PopupFactory.getModalContext(
+              tabType,
+              onAdd: (newData) {
+                setState(() {
+                  collectData.insert(0, newData);
+                });
+              },
+              onCompleteToCollect: () {
+                // 모달 닫을 때 전달값으로 'goToCollect'를 넘김
+                Navigator.of(context).pop('goToCollect');
+              },
+            ));
 
-      if (result == 'goToCollect') 
-      {
-        WidgetsBinding.instance.addPostFrameCallback((_){
-          Shared.log('result == goToCollect ########');
-          setState(() {
-            tabIndex = TabType.collection.index; // ✅ 자동으로 컬렉션 탭으로 이동
-          });
+    if (result == 'goToCollect') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Shared.log('result == goToCollect ########');
+        setState(() {
+          tabIndex = TabType.collection.index; // ✅ 자동으로 컬렉션 탭으로 이동
         });
-      }
+      });
+    }
   }
+
   //-------------------------------------------------------------------------
   void getData(String jsonurl) async {
     if (isLoading || !hasMore) return; // ✅ [변경1] 더 이상 로딩할 게 없으면 종료
@@ -194,6 +200,7 @@ class _MyAppState extends State<MyApp> {
   }
   //-------------------------------------------------------------------------
 }
+
 class BottomNavItems {
   static final List<BottomNavigationBarItem> items = [
     BottomNavigationBarItem(
