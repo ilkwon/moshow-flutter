@@ -54,32 +54,26 @@ class _MyAppState extends State<MyApp> {
 
   var stateScroll = ScrollController();
   var userImage;
-  //-------------------------------------------------------------------------
-  void saveData() async {
-    var storage = await SharedPreferences.getInstance();
-    storage.setString('name', 'ilkwon.');
-    var name = storage.getString('name');
-
-    var map = {'age': 20};
-    storage.setString('map', jsonEncode(map));
-    var result = storage.getString('map') ?? '없는데요';
-    print(jsonDecode(result)['age']);
-  }
-
+  
   //-------------------------------------------------------------------------
   @override
   void initState() {
     super.initState();
+    
+    // 앱 시작 시 게스트 로그인.(SharedPreferences에서 user_id 확인 후 없으면 API로 게스트 생성)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<StoreProvider>().initUser();
+    });
+
+    // 스크롤 끝 감지해서 데이터 추가 로딩.
     stateScroll.addListener(() {
-      if (stateScroll.position.pixels >=
-          stateScroll.position.maxScrollExtent - 100) {
-        if (!isLoading && hasMore) {
-          getData(urls[1]);
-          Shared.log('=========== 스크롤 끝 =========== ');
-        }
+      if (stateScroll.position.pixels >= stateScroll.position.maxScrollExtent - 200) {
+        Shared.log('스크롤 끝 감지, 추가 데이터 로딩 시도');
+        getData(urls[0]);
       }
     });
     getData(urls[0]);
+
   }
 
   //-------------------------------------------------------------------------
@@ -192,9 +186,9 @@ class _MyAppState extends State<MyApp> {
 
     isLoading = false;
   }
-  //-------------------------------------------------------------------------
+  
 }
-
+//-------------------------------------------------------------------------
 class BottomNavItems {
   static final List<BottomNavigationBarItem> items = [
     BottomNavigationBarItem(
