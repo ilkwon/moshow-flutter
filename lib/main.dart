@@ -8,9 +8,6 @@ import 'package:moshow/providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-
 // moshow pages.
 import 'common/shared.dart';
 import './style.dart' as style;
@@ -20,9 +17,6 @@ import './collect.dart';
 ///////////////////////////////////////////////////////////////////////////////
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 
   runApp(MultiProvider(
     providers: [
