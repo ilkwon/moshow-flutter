@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:moshow/common/api_client.dart';
 import 'package:moshow/common/define.dart';
 import 'dart:convert';
 import 'package:moshow/pop_modal.dart';
@@ -39,11 +40,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  var urls = [
-    'https://codingapple1.github.io/app/data.json',
-    'https://codingapple1.github.io/app/more1.json'
-  ];
-  int pageSizeFromJosnData = 3;
+
   bool isLoading = false;
   bool hasMore = true;
 
@@ -53,7 +50,6 @@ class _MyAppState extends State<MyApp> {
   dynamic collectData = [];
 
   var stateScroll = ScrollController();
-  var userImage;
   
   //-------------------------------------------------------------------------
   @override
@@ -69,10 +65,10 @@ class _MyAppState extends State<MyApp> {
     stateScroll.addListener(() {
       if (stateScroll.position.pixels >= stateScroll.position.maxScrollExtent - 200) {
         Shared.log('스크롤 끝 감지, 추가 데이터 로딩 시도');
-        getData(urls[0]);
+        loadFeeds();
       }
     });
-    getData(urls[0]);
+    loadFeeds();
 
   }
 
@@ -116,6 +112,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   //-------------------------------------------------------------------------
+  // 등록 팝업 처리 함수
   void processPopupModal(int index) async {
     final tabType = TabType.values[tabIndex];
     // Show Popup.
@@ -145,48 +142,33 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  //-------------------------------------------------------------------------
-  void getData(String jsonurl) async {
+  // 데이터 로딩 함수 (스크롤 끝 감지 시 호출)
+  void loadFeeds() async {
+    Shared.log('🔄 loadFeeds() 호출됨'); // ← 추가
     if (isLoading || !hasMore) return; // ✅ [변경1] 더 이상 로딩할 게 없으면 종료
+    Shared.log('🔄 loadFeeds() hasMore: $hasMore'); //
     isLoading = true;
 
-    Shared.log('요청 URL: $jsonurl');
-
     try {
-      var result = await http.get(Uri.parse(jsonurl));
-      var json = jsonDecode(result.body);
-
-      // ✅ [변경2] JSON이 null 또는 비어있으면 로딩 중단
-      if (!Shared.hasValue(json)) {
-        setState(() {
-          hasMore = false; // ✅ 더 이상 데이터 없음
-        });
-        Shared.log('⚠️ 더 이상 가져올 데이터가 없습니다.');
-      } else {
-        // ✅ [변경3] 유효한 json이면 List/Map 구분하여 처리
-        setState(() {
-          if (json is List) {
-            collectData.addAll(json);
-            hasMore = json.length >= pageSizeFromJosnData;
-          } else if (json is Map) {
-            collectData.add(json);
-            hasMore = false; // Map 하나만 온 경우는 더 이상 없음
-          }
-          Shared.log('✅ 데이터 추가 완료: ${json is List ? json.length : 1}개');
-        });
-      }
-    } catch (e) {
-      Shared.log('❌ 로딩 중 예외 발생: $e');
-
-      // ✅ [변경5] 예외 발생 시 더 이상 로딩하지 않도록 막기
+      Shared.log('🌐 API 요청 시작'); // ← 추가
+      final List<dynamic> result = await ApiClient.instance.get('/feed');
+      Shared.log('🌐 API 요청 완료, 받은 데이터 수: ${result.length}'); 
       setState(() {
-        hasMore = false;
+        if (result.isEmpty) {
+          hasMore = false; // ✅ [변경2] 빈 데이터가 오면 더 이상 로딩할 게 없는 것으로 간주
+        } else {
+          collectData.addAll(result);
+          homeData = result; // 홈은 최신 3개만 보여주기.
+          hasMore = result.length == pageSize; // ✅ [변경3] 받은 데이터 수로 더 로딩할지 결정
+        }        
       });
-    }
+    } catch (error) {
+      Shared.log('데이터 로딩 중 오류: $error');
+      setState(() => hasMore = false ); // 오류 발생 시 더 이상 로딩 시도하지 않도록 설정      
+    } 
 
     isLoading = false;
-  }
-  
+  }  
 }
 //-------------------------------------------------------------------------
 class BottomNavItems {

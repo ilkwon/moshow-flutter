@@ -5,12 +5,12 @@ import 'dart:ui';
 const String appName = "모두의 쇼케이스";
 const int pageSize = 3;
 
-const bool isProduction = false; // 배포할 땐 true로 변경
+const bool isProduction = true; // 배포할 땐 true로 변경
 
 const String apiBaseUrl = isProduction
     ? "https://moshow-api-561685747014.asia-northeast3.run.app"
     : "http://localhost:8080";
-    
+
 class RouteName {
   static const home = '/home';
   static const upload = '/upload';
