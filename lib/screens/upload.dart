@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-import 'package:moshow/providers.dart';
+import 'package:moshow/providers/app_provider.dart';
 import 'package:moshow/common/api_client.dart';
 import 'package:moshow/common/shared.dart';
 

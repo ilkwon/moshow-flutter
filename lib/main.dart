@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
 import 'package:moshow/common/api_client.dart';
 import 'package:moshow/common/define.dart';
-import 'dart:convert';
-import 'package:moshow/pop_modal.dart';
 
-import 'package:moshow/providers.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:moshow/screens/pop_modal.dart';
+
+import 'package:moshow/providers/app_provider.dart';
+
 import 'package:provider/provider.dart';
 
 // moshow pages.
-import 'common/shared.dart';
-import './style.dart' as style;
-import './home.dart';
-import './collect.dart';
-
+import 'package:moshow/common/shared.dart';
+import 'package:moshow/style.dart' as style;
+import 'package:moshow/screens/home.dart';
+import 'package:moshow/screens/collect.dart';
 ///////////////////////////////////////////////////////////////////////////////
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,7 +39,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   bool isLoading = false;
   bool hasMore = true;
 
@@ -50,12 +48,12 @@ class _MyAppState extends State<MyApp> {
   dynamic collectData = [];
 
   var stateScroll = ScrollController();
-  
+
   //-------------------------------------------------------------------------
   @override
   void initState() {
     super.initState();
-    
+
     // 앱 시작 시 게스트 로그인.(SharedPreferences에서 user_id 확인 후 없으면 API로 게스트 생성)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<StoreProvider>().initUser();
@@ -63,13 +61,13 @@ class _MyAppState extends State<MyApp> {
 
     // 스크롤 끝 감지해서 데이터 추가 로딩.
     stateScroll.addListener(() {
-      if (stateScroll.position.pixels >= stateScroll.position.maxScrollExtent - 200) {
+      if (stateScroll.position.pixels >=
+          stateScroll.position.maxScrollExtent - 200) {
         Shared.log('스크롤 끝 감지, 추가 데이터 로딩 시도');
         loadFeeds();
       }
     });
     loadFeeds();
-
   }
 
   //-------------------------------------------------------------------------
@@ -77,30 +75,28 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(appName)),
-      body: (tabIndex == TabType.upload.index)
-          ? SizedBox.shrink() // 등록되지 않은 화면 띄우지 않기.
-          : [
-              Home(datas: homeData),
-              Text(
-                '마켓',
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-              //Placeholder(), // 등록 버튼
-              Collect(
-                  datas: collectData,
-                  scroll: stateScroll,
-                  loading: isLoading,
-                  hasMore: hasMore),
-              Text('계 정', style: Theme.of(context).textTheme.labelLarge),
-            ][tabIndex > 2 ? tabIndex - 1 : tabIndex],
+      appBar: AppBar(title: Text(AppConfig.appName)),
+      body: IndexedStack(
+        index: tabIndex > TabType.upload.index ? tabIndex - 1 : tabIndex,
+        children: [
+          Home(datas: homeData),
+          Text('탐색', style: Theme.of(context).textTheme.labelLarge),
+          Collect(
+            datas: collectData,
+            scroll: stateScroll,
+            loading: isLoading,
+            hasMore: hasMore,
+          ),
+          Text('프로필', style: Theme.of(context).textTheme.labelLarge),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
           // update 현재 탭.
           currentIndex: tabIndex,
           onTap: (int i) async {
             if (i == TabType.upload.index) {
               Shared.log('등록 탭이 눌림');
-              processPopupModal(i);
+              processPopupModal();
             } else {
               setState(() {
                 tabIndex = i;
@@ -113,7 +109,7 @@ class _MyAppState extends State<MyApp> {
 
   //-------------------------------------------------------------------------
   // 등록 팝업 처리 함수
-  void processPopupModal(int index) async {
+  void processPopupModal() async {
     final tabType = TabType.values[tabIndex];
     // Show Popup.
     var result = await showModalBottomSheet(
@@ -136,7 +132,7 @@ class _MyAppState extends State<MyApp> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Shared.log('result == goToCollect ########');
         setState(() {
-          tabIndex = TabType.collection.index; // ✅ 자동으로 컬렉션 탭으로 이동
+          tabIndex = TabType.collect.index; // ✅ 자동으로 컬렉션 탭으로 이동
         });
       });
     }
@@ -152,25 +148,27 @@ class _MyAppState extends State<MyApp> {
     try {
       Shared.log('🌐 API 요청 시작'); // ← 추가
       final List<dynamic> result = await ApiClient.instance.get('/feed');
-      Shared.log('🌐 API 요청 완료, 받은 데이터 수: ${result.length}'); 
+      Shared.log('🌐 API 요청 완료, 받은 데이터 수: ${result.length}');
       setState(() {
         if (result.isEmpty) {
           hasMore = false; // ✅ [변경2] 빈 데이터가 오면 더 이상 로딩할 게 없는 것으로 간주
         } else {
           collectData.addAll(result);
           homeData = result; // 홈은 최신 3개만 보여주기.
-          hasMore = result.length == pageSize; // ✅ [변경3] 받은 데이터 수로 더 로딩할지 결정
-        }        
+          hasMore = result.length ==
+              AppConfig.pageSize; // ✅ [변경3] 받은 데이터 수로 더 로딩할지 결정
+        }
       });
     } catch (error) {
       Shared.log('데이터 로딩 중 오류: $error');
-      setState(() => hasMore = false ); // 오류 발생 시 더 이상 로딩 시도하지 않도록 설정      
-    } 
+      setState(() => hasMore = false); // 오류 발생 시 더 이상 로딩 시도하지 않도록 설정
+    }
 
     isLoading = false;
-  }  
+  }
 }
-//-------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------------
 class BottomNavItems {
   static final List<BottomNavigationBarItem> items = [
     BottomNavigationBarItem(
@@ -178,17 +176,20 @@ class BottomNavItems {
       label: '홈',
     ),
     BottomNavigationBarItem(
-      icon: Icon(Icons.shopping_bag),
-      label: '마켓',
+      icon: Icon(Icons.search),
+      label: '탐색',
     ),
-    style.BottomNavigation.uploadButtonNavItem(), // 가운데 등록 버튼
+    BottomNavigationBarItem(
+      icon: Icon(Icons.add_circle_outline),
+      label: '등록',
+    ),
     BottomNavigationBarItem(
       icon: Icon(Icons.video_collection),
       label: '컬렉션',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.account_circle),
-      label: '계정',
+      label: '프로필',
     ),
   ];
 }

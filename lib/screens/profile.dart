@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:moshow/providers.dart';
+import 'package:moshow/providers/app_provider.dart';
 import 'package:provider/provider.dart';
 
 class Profile extends StatelessWidget {

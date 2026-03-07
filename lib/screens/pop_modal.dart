@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moshow/common/define.dart';
-import 'package:moshow/pop_modal_collection.dart';
-import 'package:moshow/pop_modal_market.dart';
+import 'package:moshow/screens/pop_modal_collection.dart';
+import 'package:moshow/screens/pop_modal_market.dart';
 
 
 class PopupFactory{
@@ -10,12 +10,12 @@ class PopupFactory{
     required VoidCallback onCompleteToCollect,
     }){
       switch (tabType) {
-        case TabType.market:
+        case TabType.search:
           return PopModalMarket(
             onAdd: onAdd,
             onComplete: onCompleteToCollect,
           );
-        case TabType.collection:
+        case TabType.collect:
           return PopModalCollection(
             onAdd: onAdd,
             onComplete: onCompleteToCollect,

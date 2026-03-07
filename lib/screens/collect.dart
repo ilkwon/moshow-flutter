@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'common/shared.dart';
-import './profile.dart';
+import 'package:moshow/common/shared.dart';
+import 'package:moshow/screens/profile.dart';
 
 class Collect extends StatefulWidget {
   Collect({super.key, this.datas, this.scroll, this.loading, this.hasMore});

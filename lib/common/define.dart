@@ -1,30 +1,90 @@
-// lib/define.dart
+// 앱 전체에서 공유하는 상수와 열거형 모음
+//-----------------------------------------------------------------------------
+// 앱 설정
+//-----------------------------------------------------------------------------
+class AppConfig {
+// 앱 이름
+  static const String appName = 'moshow';
+// 서버 주소
+  static const String apiBaseUrl =
+      'https://moshow-api-561685747014.asia-northeast3.run.app';
 
-import 'dart:ui';
-
-const String appName = "모두의 쇼케이스";
-const int pageSize = 3;
-
-const bool isProduction = true; // 배포할 땐 true로 변경
-
-const String apiBaseUrl = isProduction
-    ? "https://moshow-api-561685747014.asia-northeast3.run.app"
-    : "http://localhost:8080";
-
-class RouteName {
-  static const home = '/home';
-  static const upload = '/upload';
+// true면 실서버, false면 로컬 (localhost:8080)
+  static const bool isProduction = true;
+// 피드 한 번에 불러올 게시물 수
+  static const int pageSize = 10;
 }
 
-class AppColors {
-  static const primary = Color(0xFF2196F3);
-  static const secondary = Color(0xFF42A5F5);
-}
-
+// ----------------------------------------------------------------------------
+// 앱 내비게이션
+// ----------------------------------------------------------------------------
+// 바텀바 5개 탭을 숫자 대신 이름으로 관리.
 enum TabType {
   home,
-  market,
+  search,
   upload,
-  collection,
-  account,
+  collect,
+  profile,
 }
+
+// ----------------------------------------------------------------------------
+// API 상태
+// ----------------------------------------------------------------------------
+// 서버 응답 HTTP 코드를 이름으로 관리
+enum ApiStatus {
+  success, // 200
+  created, // 201
+  badRequest, // 400
+  unauthorized, // 401
+  notFound, // 404
+  serverError, // 500
+}
+
+// ----------------------------------------------------------------------------
+// 사용자
+// ----------------------------------------------------------------------------
+// 게스트로 시작해서 나중에 소셜 로그인으로 승격
+enum UserType {
+  guest,
+  member,
+}
+
+// ----------------------------------------------------------------------------
+// 게시물
+// ----------------------------------------------------------------------------
+// 게시물의 현재 상태
+enum PostStatus {
+  active, // 정상 노출
+  hidden, // 작성자 숨김
+  deleted, // 작성자 삭제
+  suspended, // 관리자 제재
+}
+
+// ----------------------------------------------------------------------------
+// 업로드
+// ----------------------------------------------------------------------------
+
+// 업로드 진행 상태
+enum UploadStatus {
+  idle, // 대기 중
+  uploading, // 업로드 중
+  success, // 완료
+  failed, // 실패
+}
+
+// ----------------------------------------------------------------------------
+// 쇼케이스
+// ----------------------------------------------------------------------------
+
+// 쇼케이스 뷰 모드. space는 v1.x 3D 전시관 (장기 계획)
+enum ShowcaseViewMode {
+  grid, // 현재 — 2D 그리드
+  space, // 나중 — 3D 전시관 (Unity WebGL)
+}
+
+// ----------------------------------------------------------------------------
+
+
+// 나중에 추가할 것
+// ThemeType { light, dark, warm, gallery, custom }
+// custom일 때 사용자가 직접 색상 지정

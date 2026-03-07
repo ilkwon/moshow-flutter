@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:moshow/upload.dart';
+import 'package:moshow/screens/upload.dart';
 
 class PopModalCollection extends StatelessWidget {
   PopModalCollection({super.key, this.onAdd, this.onComplete});

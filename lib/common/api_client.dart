@@ -16,14 +16,14 @@ class ApiClient {
 
   // GET 요청
   Future<dynamic> get(String path) async {
-    final url = Uri.parse('$apiBaseUrl$path');
+    final url = Uri.parse('${AppConfig.apiBaseUrl}$path');
     final response = await http.get(url, headers: _headers);
     return _processResponse(response);
   }
   
   // POST 요청
   Future<dynamic> post(String path, Map<String, dynamic> body) async {
-    final url = Uri.parse('$apiBaseUrl$path');
+    final url = Uri.parse('${AppConfig.apiBaseUrl}$path');
     final response = await http.post(url, headers: _headers, body: json.encode(body));
     
     return _processResponse(response);
