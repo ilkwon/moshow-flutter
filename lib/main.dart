@@ -6,6 +6,7 @@ import 'package:moshow/common/define.dart';
 import 'package:moshow/screens/pop_modal.dart';
 
 import 'package:moshow/providers/app_provider.dart';
+import 'package:moshow/theme/theme_provider.dart';
 
 import 'package:provider/provider.dart';
 
@@ -21,6 +22,7 @@ void main() async {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (c) => StoreProvider()),
+      ChangeNotifierProvider(create: (c) => ThemeProvider()),
     ],
     child: MaterialApp(
       theme: style.theme.copyWith(
