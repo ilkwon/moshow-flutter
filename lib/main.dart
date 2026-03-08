@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:moshow/common/api_client.dart';
 import 'package:moshow/common/define.dart';
@@ -19,6 +20,13 @@ import 'package:moshow/screens/collect.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // 상태바 투명처리
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+    )
+  );
+  
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (c) => StoreProvider()),
@@ -77,7 +85,8 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppConfig.appName)),
+      extendBody: true,
+      extendBodyBehindAppBar: true,
       body: IndexedStack(
         index: tabIndex > TabType.upload.index ? tabIndex - 1 : tabIndex,
         children: [
