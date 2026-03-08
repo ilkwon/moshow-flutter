@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-//import 'package:flutter/services.dart';
 import 'package:moshow/theme/app_theme.dart';
 import 'package:moshow/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +21,6 @@ class Home extends StatelessWidget {
   }
 }
 
-// 
 class _ShowcaseCard extends StatelessWidget {
   const _ShowcaseCard({required this.item});
 
@@ -30,11 +28,11 @@ class _ShowcaseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {    
-    final colors = context.watch<ThemeProvider>().currentTheme.colors;
+    final theme = context.watch<ThemeProvider>().currentTheme;
     return Stack(
       children: [
         _buildImage(),
-        _buildInfo(colors, context),
+        _buildInfo(theme, context),
       ],
     );
   }
@@ -50,7 +48,7 @@ class _ShowcaseCard extends StatelessWidget {
     );
   }
   
-  Widget _buildInfo(AppColors colors, BuildContext context) {
+  Widget _buildInfo(AppTheme theme, BuildContext context) {
     return Positioned(
       left: 0,
       right: 0,
@@ -70,31 +68,29 @@ class _ShowcaseCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTitle(colors),
+            _buildTitle(theme),
             const SizedBox(height: 8),
-            _buildAuthor(colors),
+            _buildAuthor(theme),
           ],
         ),
     ));
   }
   
-  Widget _buildTitle(AppColors colors) {
+  Widget _buildTitle(AppTheme theme) {
     return Text(
       item['caption'] ?? '',
-      style: TextStyle(
-        color:colors.background,
-        fontSize: 22,
+      style: theme.typography.titleLarge.copyWith(
+        color:theme.colors.background,        
       )       
     );
   }
   
-  Widget _buildAuthor(AppColors colors) {
+  Widget _buildAuthor(AppTheme theme) {
     
     return Text(
       '@${item['user_id']}',
-      style: TextStyle(
-        color: colors.background,
-        fontSize: 14
+      style: theme.typography.bodyMedium.copyWith(
+        color: theme.colors.background,
       ),
     );
   }
