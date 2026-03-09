@@ -7,6 +7,7 @@ import 'package:moshow/common/define.dart';
 import 'package:moshow/screens/pop_modal.dart';
 
 import 'package:moshow/providers/app_provider.dart';
+import 'package:moshow/screens/upload_screen.dart';
 import 'package:moshow/theme/theme_provider.dart';
 
 import 'package:provider/provider.dart';
@@ -33,10 +34,12 @@ void main() async {
       ChangeNotifierProvider(create: (c) => ThemeProvider()),
     ],
     child: MaterialApp(
+      debugShowCheckedModeBanner:false, // 디버그 icon 없애기
       theme: style.theme.copyWith(
         textTheme: style.theme.textTheme.apply(fontFamily: 'NotoSansKR'),
       ),
       home: MyApp(),
+      //home: UploadScreen(),
     ),
   ));
 }
@@ -107,7 +110,17 @@ class _MyAppState extends State<MyApp> {
           onTap: (int i) async {
             if (i == TabType.upload.index) {
               Shared.log('등록 탭이 눌림');
-              processPopupModal();
+              
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const UploadScreen()),
+              );
+              setState(() {
+                hasMore = true;
+                homeData = [];
+              });
+              // 업로드 완료 후 피드 새로고침.
+              loadFeeds();
+
             } else {
               setState(() {
                 tabIndex = i;
@@ -116,37 +129,6 @@ class _MyAppState extends State<MyApp> {
           },
           items: BottomNavItems.items),
     );
-  }
-
-  //-------------------------------------------------------------------------
-  // 등록 팝업 처리 함수
-  void processPopupModal() async {
-    final tabType = TabType.values[tabIndex];
-    // Show Popup.
-    var result = await showModalBottomSheet(
-        context: context,
-        isScrollControlled: true, // ✅ 높이 컨트롤 허용
-        builder: (BuildContext context) => PopupFactory.getModalContext(
-              tabType,
-              onAdd: (newData) {
-                setState(() {
-                  collectData.insert(0, newData);
-                });
-              },
-              onCompleteToCollect: () {
-                // 모달 닫을 때 전달값으로 'goToCollect'를 넘김
-                Navigator.of(context).pop('goToCollect');
-              },
-            ));
-
-    if (result == 'goToCollect') {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Shared.log('result == goToCollect ########');
-        setState(() {
-          tabIndex = TabType.collect.index; // ✅ 자동으로 컬렉션 탭으로 이동
-        });
-      });
-    }
   }
 
   // 데이터 로딩 함수 (스크롤 끝 감지 시 호출)
