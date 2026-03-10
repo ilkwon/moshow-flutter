@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:moshow/common/api_client.dart';
 import 'package:moshow/common/define.dart';
 
-import 'package:moshow/screens/pop_modal.dart';
+//import 'package:moshow/screens/pop_modal.dart';
 
 import 'package:moshow/providers/app_provider.dart';
 import 'package:moshow/screens/upload_screen.dart';
@@ -17,24 +17,23 @@ import 'package:moshow/common/shared.dart';
 import 'package:moshow/style.dart' as style;
 import 'package:moshow/screens/home.dart';
 import 'package:moshow/screens/collect.dart';
+
 ///////////////////////////////////////////////////////////////////////////////
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 상태바 투명처리
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-    )
-  );
-  
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+  ));
+
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (c) => StoreProvider()),
       ChangeNotifierProvider(create: (c) => ThemeProvider()),
     ],
     child: MaterialApp(
-      debugShowCheckedModeBanner:false, // 디버그 icon 없애기
+      debugShowCheckedModeBanner: false, // 디버그 icon 없애기
       theme: style.theme.copyWith(
         textTheme: style.theme.textTheme.apply(fontFamily: 'NotoSansKR'),
       ),
@@ -87,47 +86,56 @@ class _MyAppState extends State<MyApp> {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      extendBodyBehindAppBar: true,
-      body: IndexedStack(
-        index: tabIndex > TabType.upload.index ? tabIndex - 1 : tabIndex,
-        children: [
-          Home(datas: homeData),
-          Text('탐색', style: Theme.of(context).textTheme.labelLarge),
-          Collect(
-            datas: collectData,
-            scroll: stateScroll,
-            loading: isLoading,
-            hasMore: hasMore,
+    return Center(
+      child: SizedBox(
+        width: 480,
+        height: MediaQuery.of(context).size.height.clamp(0, 853),
+        child: Scaffold(
+          extendBody: true,
+          extendBodyBehindAppBar: true,
+          body: IndexedStack(
+            index: tabIndex > TabType.upload.index ? tabIndex - 1 : tabIndex,
+            children: [
+              Home(datas: homeData),
+              Text('탐색', style: Theme.of(context).textTheme.labelLarge),
+              Collect(
+                datas: collectData,
+                scroll: stateScroll,
+                loading: isLoading,
+                hasMore: hasMore,
+              ),
+              Text('프로필', style: Theme.of(context).textTheme.labelLarge),
+            ],
           ),
-          Text('프로필', style: Theme.of(context).textTheme.labelLarge),
-        ],
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: tabIndex,
+            onTap: (int i) async {
+              if (i == TabType.upload.index) {
+                Shared.log('등록 탭이 눌림');
+                await Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => Center(
+                        child: SizedBox(
+                            width: 480,
+                            height: MediaQuery.of(context)
+                                .size
+                                .height
+                                .clamp(0, 853),
+                            child: const UploadScreen()))));
+                setState(() {
+                  hasMore = true;
+                  homeData = [];
+                });
+                loadFeeds();
+              } else {
+                setState(() {
+                  tabIndex = i;
+                });
+              }
+            },
+            items: BottomNavItems.items,
+          ),
+        ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-          // update 현재 탭.
-          currentIndex: tabIndex,
-          onTap: (int i) async {
-            if (i == TabType.upload.index) {
-              Shared.log('등록 탭이 눌림');
-              
-              await Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const UploadScreen()),
-              );
-              setState(() {
-                hasMore = true;
-                homeData = [];
-              });
-              // 업로드 완료 후 피드 새로고침.
-              loadFeeds();
-
-            } else {
-              setState(() {
-                tabIndex = i;
-              });
-            }
-          },
-          items: BottomNavItems.items),
     );
   }
 
@@ -146,7 +154,7 @@ class _MyAppState extends State<MyApp> {
         if (result.isEmpty) {
           hasMore = false; // ✅ [변경2] 빈 데이터가 오면 더 이상 로딩할 게 없는 것으로 간주
         } else {
-          collectData.addAll(result);
+          collectData = result;
           homeData = result; // 홈은 최신 3개만 보여주기.
           hasMore = result.length ==
               AppConfig.pageSize; // ✅ [변경3] 받은 데이터 수로 더 로딩할지 결정

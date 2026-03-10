@@ -30,6 +30,7 @@ class _ShowcaseCard extends StatelessWidget {
   Widget build(BuildContext context) {    
     final theme = context.watch<ThemeProvider>().currentTheme;
     return Stack(
+      fit: StackFit.expand,
       children: [
         _buildImage(),
         _buildInfo(theme, context),
@@ -40,11 +41,11 @@ class _ShowcaseCard extends StatelessWidget {
   Widget _buildImage() {
     if (item['media_url'] == null) return const SizedBox.expand();
 
-    return Image.network(
-      item['media_url'],
-      fit:BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
+    return SizedBox.expand(
+      child: Image.network(
+        item['media_url'],
+        fit:BoxFit.cover,
+      ),
     );
   }
   

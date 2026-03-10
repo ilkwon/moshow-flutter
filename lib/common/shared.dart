@@ -11,8 +11,7 @@ class Shared{
       errorMethodCount: 5,
       lineLength: 80,
       colors: true,
-      printEmojis: true,
-      printTime: false,
+      printEmojis: true,      
     ),
   );
   //-------------------------------------------------------------------------

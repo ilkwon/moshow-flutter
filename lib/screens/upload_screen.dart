@@ -87,38 +87,39 @@ class _UploadScreenState extends State<UploadScreen> {
         'media_url': fileUrl,
         'caption': _captionController.text,
       });
+
+      // 완료: 홈으로 이동
+      setState(() => _uploadStatus = UploadStatus.success);
+      if (!mounted) return;
+      Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (error) {
       // TODO
       Shared.log('❌ 업로드 실패: $error');
+      setState(() => _uploadStatus = UploadStatus.failed);
     }
-
-    // 완료: 홈으로 이동
-    setState(() => _uploadStatus = UploadStatus.success);
-    if (!mounted) return;
-    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
+  //------------------------------------------------
   @override
   Widget build(BuildContext context) {
     final theme = context.watch<ThemeProvider>().currentTheme;
     return Scaffold(
-      backgroundColor: theme.colors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
+        backgroundColor: theme.colors.background,
+        body: SafeArea(child: LayoutBuilder(builder: (context, constraints) {
+          final double imageSize = constraints.maxWidth - 40;
+          return SingleChildScrollView(
+              child: Column(children: [
             _buildTopbar(theme),
             const SizedBox(height: 16),
             Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _buildImageArea(theme)),
+                child: _buildImageArea(theme, imageSize)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: _buildCaptionField(theme),
             ),
-          ],
-        ),
-      ),
-    );
+          ]));
+        })));
   }
 
   Widget _buildTopbar(AppTheme theme) {
@@ -126,7 +127,9 @@ class _UploadScreenState extends State<UploadScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Icon(Icons.close, size: 24, color: theme.colors.primary),
+          GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Icon(Icons.close, size: 24, color: theme.colors.primary)),
           GestureDetector(
             onTap: _upload,
             child: Text(
@@ -141,8 +144,8 @@ class _UploadScreenState extends State<UploadScreen> {
         ]));
   }
 
-  Widget _buildImageArea(AppTheme theme) {
-    final double size = MediaQuery.of(context).size.width - 40;
+  //---------------------------------------------------------------------------
+  Widget _buildImageArea(AppTheme theme, double size) {
     return GestureDetector(
       onTap: _pickImage,
       child: Container(
@@ -153,16 +156,13 @@ class _UploadScreenState extends State<UploadScreen> {
           borderRadius: BorderRadius.circular(theme.radius.large),
         ),
         child: _pickedImage == null
-            ? Icon(
-                Icons.add,
-                size: 32,
-                color: theme.colors.secondary,
-              )
-            : _buildPreview(),
+            ? Icon(Icons.add, size: 32, color: theme.colors.secondary)
+            : _buildImageWithOverlay(),
       ),
     );
   }
 
+  //---------------------------------------------------------------------------
   Widget _buildCaptionField(AppTheme theme) {
     return TextField(
       controller: _captionController,
@@ -182,6 +182,7 @@ class _UploadScreenState extends State<UploadScreen> {
     );
   }
 
+  //---------------------------------------------------------------------------
   Widget _buildPreview() {
     if (kIsWeb) {
       return FutureBuilder<Uint8List>(
@@ -197,6 +198,28 @@ class _UploadScreenState extends State<UploadScreen> {
     return Image.file(
       File(_pickedImage!.path),
       fit: BoxFit.cover,
+    );
+  }
+
+  //---------------------------------------------------------------------------
+  Widget _buildImageWithOverlay() {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: _buildPreview(),
+        ),
+        if (_uploadStatus == UploadStatus.uploading)
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Center(
+                child: CircularProgressIndicator(color: Colors.white)),
+          ),
+      ],
     );
   }
 }
