@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:moshow/common/shared.dart';
-import 'package:moshow/screens/profile.dart';
+import 'package:moshow/profile/profile_screen.dart';
 
-class Collect extends StatefulWidget {
-  Collect({super.key, this.datas, this.scroll, this.loading, this.hasMore});
+
+class CollectScreen extends StatefulWidget {
+  CollectScreen({super.key, this.datas, this.scroll, this.loading, this.hasMore});
 
   final datas;
   final scroll;
@@ -12,10 +13,10 @@ class Collect extends StatefulWidget {
   final bool? hasMore;
 
   @override
-  State<Collect> createState() => _CollectState();
+  State<CollectScreen> createState() => _CollectScreenState();
 }
 
-class _CollectState extends State<Collect> {
+class _CollectScreenState extends State<CollectScreen> {
   //-------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
@@ -51,7 +52,7 @@ class _CollectState extends State<Collect> {
                   GestureDetector(
                     onTap: () {
                       Navigator.push(context,
-                          CupertinoPageRoute(builder: (c) => Profile()));
+                          CupertinoPageRoute(builder: (c) => ProfileScreen()));
                     },
                     child: Text('@${widget.datas[i]['user_id'] ?? '알 수 없음'}'),
                   ),

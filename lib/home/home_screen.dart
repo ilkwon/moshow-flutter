@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:moshow/theme/app_theme.dart';
-import 'package:moshow/theme/theme_provider.dart';
+import 'package:moshow/common/theme/app_theme.dart';
+import 'package:moshow/common/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 
-class Home extends StatelessWidget {
-  const Home({super.key, this.datas});
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key, this.datas});
 
   final dynamic datas;
 

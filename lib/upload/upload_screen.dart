@@ -7,9 +7,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:moshow/common/api_client.dart';
 import 'package:moshow/common/define.dart';
 import 'package:moshow/common/shared.dart';
-import 'package:moshow/providers/app_provider.dart';
-import 'package:moshow/theme/app_theme.dart';
-import 'package:moshow/theme/theme_provider.dart';
+import 'package:moshow/common/providers/app_provider.dart';
+import 'package:moshow/common/theme/app_theme.dart';
+import 'package:moshow/common/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 class UploadScreen extends StatefulWidget {

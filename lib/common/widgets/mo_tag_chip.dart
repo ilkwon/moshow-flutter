@@ -1,6 +1,6 @@
 // 모쇼 공통 태그 칩 위젯
 import 'package:flutter/material.dart';
-import 'package:moshow/theme/theme_provider.dart';
+import 'package:moshow/common/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 class MoTagChip extends StatelessWidget {

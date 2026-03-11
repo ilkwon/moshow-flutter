@@ -1,7 +1,7 @@
 // 모쇼 공통 버튼 위젯
 
 import 'package:flutter/material.dart';
-import 'package:moshow/theme/theme_provider.dart';
+import 'package:moshow/common/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 enum MoButtonVariant { primary, secondary, text }

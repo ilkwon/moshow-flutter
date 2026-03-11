@@ -1,11 +1,11 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:moshow/providers/app_provider.dart';
+import 'package:moshow/common/providers/app_provider.dart';
 import 'package:provider/provider.dart';
 
-class Profile extends StatelessWidget {
-  Profile({super.key});
+class ProfileScreen extends StatelessWidget {
+  ProfileScreen({super.key});
   SliverGridDelegate gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2);
   @override
   Widget build(BuildContext context) {
