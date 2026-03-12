@@ -30,6 +30,18 @@ enum TabType {
   profile,
 }
 
+enum HomeTabType { recommend, workshop, space, klass }
+extension HomeTabTypeLabel on HomeTabType {
+  String get label {
+    switch (this) {
+      case HomeTabType.recommend: return '추천';
+      case HomeTabType.workshop: return '워크샵';
+      case HomeTabType.space: return '스페이스';
+      case HomeTabType.klass: return '클래스';
+    }
+  }
+}
+
 // ----------------------------------------------------------------------------
 // API 상태
 // ----------------------------------------------------------------------------
