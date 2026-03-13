@@ -1,11 +1,11 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:moshow/common/define.dart';
-import 'package:moshow/common/theme/app_theme.dart';
-import 'package:moshow/common/theme/theme_provider.dart';
 import 'package:moshow/home/widgets/home_sub_tab.dart';
 import 'package:moshow/home/widgets/post_card.dart';
-import 'package:provider/provider.dart';
 
+
+//------------------------------------------------------------------------------
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, this.datas});
 
@@ -15,16 +15,20 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+//------------------------------------------------------------------------------
 class _HomeScreenState extends State<HomeScreen> {
-  HomeTabType _currentTab = HomeTabType.recommend;
-
-  void _onTabSelected(HomeTabType tabType) {
-    setState(() => _currentTab = tabType);
-  }
+  final _pageController = PageController();
+  var _currentTab = HomeTabType.recommend;
 
   @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  //----------------------------------------------------------------------------
+  @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
@@ -33,86 +37,48 @@ class _HomeScreenState extends State<HomeScreen> {
         toolbarHeight: 0,
         bottom: HomeSubTab(
           currentTab: _currentTab,
-          onTabSelected: _onTabSelected),
+          onTabSelected: (tab) => setState(() => _currentTab = tab),
+        ),
       ),
-      body: PageView.builder(
-        scrollDirection: Axis.vertical,
-        itemCount: widget.datas.length,
-        itemBuilder: (context, index) => _ShowcaseCard(item: widget.datas[index]),
+      body: Listener(
+        onPointerSignal: _onPointerSignal,
+        child: PageView.builder(
+          controller: _pageController,
+          scrollDirection: Axis.vertical,
+          physics: const ClampingScrollPhysics(),
+          itemCount: widget.datas.length,
+          itemBuilder: (context, index) => _buildFeedItem(index),
+        ),
       ),
     );
   }
-}
 
-class _ShowcaseCard extends StatelessWidget {
-  const _ShowcaseCard({required this.item});
+  //----------------------------------------------------------------------------
+  void _onPointerSignal(PointerSignalEvent event) {
+    if (event is! PointerScrollEvent) return;
 
-  final Map<String, dynamic> item;
+    if (event.scrollDelta.dy > 0) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+  //----------------------------------------------------------------------------
+  // 피드 아이템 하나
+  Widget _buildFeedItem(int index) {
+    final Map<String, dynamic> item = widget.datas[index];
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = context.watch<ThemeProvider>().currentTheme;
     return PostCard(
-      imageUrl: 'https://picsum.photos/400/800',
-      title: '나무공방 소목',
-      location: '서울 마포구',
-      badge: 'TRENDING',
-    );
-  }
-
-  Widget _buildImage() {
-    if (item['media_url'] == null) return const SizedBox.expand();
-
-    return SizedBox.expand(
-      child: Image.network(
-        item['media_url'],
-        fit: BoxFit.cover,
-      ),
-    );
-  }
-
-  Widget _buildInfo(AppTheme theme, BuildContext context) {
-    return Positioned(
-        left: 0,
-        right: 0,
-        bottom: 0,
-        child: Container(
-          padding: EdgeInsets.fromLTRB(
-              20, 60, 20, MediaQuery.of(context).padding.bottom + 80),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              colors: const [
-                Color(0xCC000000),
-                Color(0x00000000),
-              ],
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTitle(theme),
-              const SizedBox(height: 8),
-              _buildAuthor(theme),
-            ],
-          ),
-        ));
-  }
-
-  Widget _buildTitle(AppTheme theme) {
-    return Text(item['caption'] ?? '',
-        style: theme.typography.titleLarge.copyWith(
-          color: theme.colors.background,
-        ));
-  }
-
-  Widget _buildAuthor(AppTheme theme) {
-    return Text(
-      '@${item['user_id']}',
-      style: theme.typography.bodyMedium.copyWith(
-        color: theme.colors.background,
-      ),
+      imageUrl: item['media_url'] as String? ?? '',
+      title: item['caption'] as String? ?? '',
+      location: '',
+      badge: '',
     );
   }
 }
