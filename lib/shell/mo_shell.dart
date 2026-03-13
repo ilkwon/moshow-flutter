@@ -112,12 +112,7 @@ class _MoShellState extends State<MoShell> {
             datas: homeData,
           ),
           const SearchScreen(),
-          CollectScreen(
-            datas: collectData,
-            scroll: stateScroll,
-            loading: feedStatus == FeedStatus.loading,
-            hasMore: hasMore,
-          ),
+          const CollectScreen(),
           ProfileScreen(),
         ],
       ),

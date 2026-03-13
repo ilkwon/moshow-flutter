@@ -1,68 +1,175 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:moshow/common/shared.dart';
-import 'package:moshow/profile/profile_screen.dart';
 
-
+//------------------------------------------------------------------------------
 class CollectScreen extends StatefulWidget {
-  CollectScreen({super.key, this.datas, this.scroll, this.loading, this.hasMore});
-
-  final datas;
-  final scroll;
-  final bool? loading;
-  final bool? hasMore;
+  const CollectScreen({super.key});
 
   @override
   State<CollectScreen> createState() => _CollectScreenState();
 }
 
+//------------------------------------------------------------------------------
 class _CollectScreenState extends State<CollectScreen> {
-  //-------------------------------------------------------------------------
+  var _currentTab = 0;
+
+  final _dummyCollections = [
+    {
+      'title': '나무공방 모음',
+      'tag': '공방',
+      'count': 5,
+      'imageUrl': 'https://picsum.photos/200/200?random=1'
+    },
+    {
+      'title': '도예 클래스',
+      'tag': '클래스',
+      'count': 3,
+      'imageUrl': 'https://picsum.photos/200/200?random=2'
+    },
+    {
+      'title': '가죽공예 스페이스',
+      'tag': '스페이스',
+      'count': 7,
+      'imageUrl': 'https://picsum.photos/200/200?random=3'
+    },
+    {
+      'title': '주말 워크숍',
+      'tag': '워크숍',
+      'count': 2,
+      'imageUrl': 'https://picsum.photos/200/200?random=4'
+    },
+  ];
   @override
   Widget build(BuildContext context) {
-    if (Shared.hasValue(widget.datas)) {
-      return ListView.builder(
-          itemCount: widget.datas.length + 1,
-          controller: widget.scroll,
-          itemBuilder: (context, i) {
-            if (i == widget.datas.length) {
-              if (true == widget.loading && true == widget.hasMore) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              } else {
-                return const SizedBox.shrink(); // 더이상 로딩할게 없으면 아무것도 표시 안함.
-              }
-            }
-
-            // 일반 데이터 아이템
-            return Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (widget.datas[i]['media_url'] != null)
-                    Image.network(
-                      widget.datas[i]['media_url'],
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(context,
-                          CupertinoPageRoute(builder: (c) => ProfileScreen()));
-                    },
-                    child: Text('@${widget.datas[i]['user_id'] ?? '알 수 없음'}'),
-                  ),
-                  Text(widget.datas[i]['caption'] ?? ''),
-                ],
-              ),
-            );
-          });
-    } else {
-      return const Center(child: Text('Now Loading...'));
-    }
+    return Column(
+      children: [
+        SizedBox(height: MediaQuery.of(context).padding.top + kToolbarHeight),
+        _buildSubTab(),
+        Expanded(child: _buildList()),
+      ],
+    );
   }
+
+  Widget _buildSubTab() {
+    return Row(
+      children: [_buildSubTabItem('내 컬렉션', 0), _buildSubTabItem('좋아요', 1)],
+    );
+  }
+
+  //---------------------------------------------------------------------------
+  Widget _buildSubTabItem(String label, int index) {
+    final bool isSelected = _currentTab == index;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _currentTab = index),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: isSelected
+                    ? const Color(0xFFD4A843)
+                    : const Color(0xFFEEEEEE),
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+              color: isSelected
+                  ? const Color(0xFFD4A843)
+                  : const Color(0xFF888888),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+  
+  //---------------------------------------------------------------------------
+  Widget _buildList() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _dummyCollections.length,
+      itemBuilder: (context, index) => _buildListItem(_dummyCollections[index]),
+    );
+  }
+  
+  //---------------------------------------------------------------------------
+  Widget _buildListItem(Map<String, dynamic> item) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F0E8),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(children: [
+        // 썸네일
+        _buildThumbnail(item),
+        const SizedBox(width: 12),
+        Expanded(child: _buildInfo(item)),
+        _buildTrailing(item['count'] as int),
+      ]),
+    );
+  }
+
+  //---------------------------------------------------------------------------
+  Widget _buildThumbnail(Map<String, dynamic> item) {
+    return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.network(
+          item['imageUrl']  as String,
+          width: 64,
+          height: 64,
+          fit: BoxFit.cover,
+        ),
+      );
+  }
+  
+  //---------------------------------------------------------------------------
+  Widget _buildInfo(Map<String, dynamic> item) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          item['title'] as String,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '#${item['tag']}',
+          style: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFF888888),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  //---------------------------------------------------------------------------
+  Widget _buildTrailing(int count) {
+    return Row(
+      children: [
+        Text(
+          '$count개',
+          style: TextStyle(
+            fontSize: 12,
+            color: Color(0xFF888888),
+          ),
+        ),
+        const SizedBox(width: 8),
+        const Icon(Icons.drag_handle, color: Color(0xFFCCCCCC)),
+      ],
+    );
+  }
+  //---------------------------------------------------------------------------
 }
