@@ -28,23 +28,13 @@ class _MoShellState extends State<MoShell> {
 
   var hasMore = true;
   dynamic homeData = [];
-  dynamic collectData = [];
-  final stateScroll = ScrollController();
 
   @override
-  void initState() {
-    // TODO: implement initState
+  void initState() {    
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<StoreProvider>().initUser();
-    });
-
-    stateScroll.addListener(() {
-      if (stateScroll.position.pixels >=
-          stateScroll.position.maxScrollExtent - AppConfig.feedPreloadOffset) {
-        loadFeed();
-      }
     });
 
     loadFeed();
@@ -63,7 +53,7 @@ class _MoShellState extends State<MoShell> {
           feedStatus = FeedStatus.done;
         } else {
           homeData = result;
-          collectData = result;
+
           hasMore = result.length == AppConfig.pageSize;
           feedStatus = FeedStatus.done;
         }
@@ -113,7 +103,7 @@ class _MoShellState extends State<MoShell> {
           ),
           const SearchScreen(),
           const CollectScreen(),
-          ProfileScreen(),
+          const ProfileScreen(),
         ],
       ),
       bottomNavigationBar: MoBottomNav(
@@ -141,7 +131,6 @@ class _MoShellState extends State<MoShell> {
       hasMore = true;
       feedStatus = FeedStatus.idle;
       homeData = [];
-      collectData = [];
     });
 
     await loadFeed();
@@ -149,4 +138,3 @@ class _MoShellState extends State<MoShell> {
 
   //---------------------------------------------------------------------------
 }
-

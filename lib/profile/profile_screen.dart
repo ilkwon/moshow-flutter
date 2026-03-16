@@ -74,7 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  _buildStats() {
+  Widget _buildStats() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
@@ -142,6 +142,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
   
   Widget _buildGridItem(int index) {
-    return Image.network('https://picsum.photos/200/200?randome=$index', fit: BoxFit.cover);
+    return Image.network('https://picsum.photos/200/200?random=$index', fit: BoxFit.cover);
   }
 }

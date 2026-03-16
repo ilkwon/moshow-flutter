@@ -65,24 +65,24 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildTagItem(String tag) {
-    final bool isSelectd = tag == _selectedTag;
+    final bool isSelected = tag == _selectedTag;
 
     return GestureDetector(
       onTap: () => setState(() => _selectedTag = tag),
       child: AnimatedContainer(
-        duration: const Duration(microseconds: 200),
+        duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelectd ? const Color(0xFFD4A843) : const Color(0xFFF0EBE1),
+          color: isSelected ? const Color(0xFFD4A843) : const Color(0xFFF0EBE1),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           tag,
           style: TextStyle(
             fontSize: 13,
-            fontWeight: isSelectd ? FontWeight.w700 : FontWeight.w400,
-            color: isSelectd ? Colors.white : const Color(0xFF666666),
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+            color: isSelected ? Colors.white : const Color(0xFF666666),
           ),
         ),
       ),
