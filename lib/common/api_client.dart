@@ -24,8 +24,22 @@ class ApiClient {
   // POST 요청
   Future<dynamic> post(String path, Map<String, dynamic> body) async {
     final url = Uri.parse('${AppConfig.apiBaseUrl}$path');
-    final response = await http.post(url, headers: _headers, body: json.encode(body));
+    final response = await http.post(url,
+      headers: _headers,
+      body: json.encode(body)
+    );
     
+    return _processResponse(response);
+  }
+
+  Future<dynamic> delete(String path, Map<String, dynamic> body) async {
+    final url = Uri.parse('${AppConfig.apiBaseUrl}$path');
+    final response = await http.delete(
+      url,
+      headers: _headers,
+      body: json.encode(body),
+    );
+
     return _processResponse(response);
   }
 

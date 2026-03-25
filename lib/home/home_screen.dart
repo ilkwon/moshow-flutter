@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:moshow/common/define.dart';
 import 'package:moshow/home/widgets/home_sub_tab.dart';
 import 'package:moshow/home/widgets/post_card.dart';
+import 'package:moshow/home/widgets/showcase_card.dart';
 
 
 //------------------------------------------------------------------------------
@@ -73,12 +74,17 @@ class _HomeScreenState extends State<HomeScreen> {
   // 피드 아이템 하나
   Widget _buildFeedItem(int index) {
     final Map<String, dynamic> item = widget.datas[index];
+    final String type = item['type'] as String? ?? 'post';
+
+    if (type == 'showcase') {
+      return ShowcaseCard(items: const []);
+    }
 
     return PostCard(
       imageUrl: item['media_url'] as String? ?? '',
       title: item['caption'] as String? ?? '',
       location: '',
-      badge: '',
+      badge: type == 'sponsored' ? 'AD' : '',
     );
   }
 
