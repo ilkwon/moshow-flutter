@@ -81,7 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return PostCard(
-      imageUrl: item['media_url'] as String? ?? '',
+      //imageUrl: item['media_url'] as String? ?? '',
+      imageUrl: (item['media_urls'] as List<dynamic>?)?.first as String? ?? '',
       title: item['caption'] as String? ?? '',
       location: '',
       badge: type == 'sponsored' ? 'AD' : '',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:moshow/common/api_client.dart';
 import 'package:moshow/common/define.dart';
 import 'package:moshow/common/shared.dart';
@@ -124,14 +125,22 @@ class _MoShellState extends State<MoShell> {
       ),
       bottomNavigationBar: MoBottomNav(
           currentTab: tabIndex,
-          onTabSelected: (TabType tab) {
+          onTabSelected: (TabType tab) async {
             // 업로드 탭 선택 시 모달로 업로드 화면 표시
             if (tab == TabType.upload) {
+              final picker = ImagePicker();
+              final List<XFile> pickedImages = await picker.pickMultiImage(
+                imageQuality: 85,
+              );
+
+              // 취소시 현재 탭 유지.
+              if (pickedImages.isEmpty) return;
+
               _navigatorKey.currentState!
                   .push(
                     MaterialPageRoute(
                       fullscreenDialog: true,
-                      builder: (_) => const UploadScreen(),
+                      builder: (_) => UploadScreen(images:pickedImages),
                     ),
                   )
                   .then((_) => refreshFeed()); // 업로드 후 피드 새로고침

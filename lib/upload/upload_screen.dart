@@ -13,7 +13,12 @@ import 'package:moshow/common/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 class UploadScreen extends StatefulWidget {
-  const UploadScreen({super.key});
+  final List<XFile> images;
+
+  const UploadScreen({
+    super.key,
+    required this.images,
+  });
 
   @override
   State<UploadScreen> createState() => _UploadScreenState();
@@ -21,80 +26,81 @@ class UploadScreen extends StatefulWidget {
 
 class _UploadScreenState extends State<UploadScreen> {
   final TextEditingController _captionController = TextEditingController();
-  final ImagePicker _picker = ImagePicker();
 
-  XFile? _pickedImage;
+  late List<XFile> _pickedImages;
+
   UploadStatus _uploadStatus = UploadStatus.idle;
 
   @override
   void initState() {
     super.initState();
-    // 화면 열리자마자 갤러리 오픈
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _pickImage();
-    });
+
+    _pickedImages = widget.images;
   }
 
   @override
   void dispose() {
     _captionController.dispose();
-    // TODO: implement dispose
+
     super.dispose();
   }
-
-  Future<void> _pickImage() async {
-    final XFile? picked = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-    );
-    if (picked == null) return;
-    setState(() => _pickedImage = picked);
-  }
-
+  //------------------------------------------------------------------------
   Future<void> _upload() async {
     // 가드 조건 (예외 처리)
     if (_uploadStatus == UploadStatus.uploading) return;
-    if (_pickedImage == null) return;
+    if (_pickedImages.isEmpty) return;
+
+    // DB에 저장.
+    final String? userId =
+        Provider.of<StoreProvider>(context, listen: false).userId;
 
     setState(() => _uploadStatus = UploadStatus.uploading);
 
     try {
-      // 1단계: presigned URL 발급
-      final presign = await ApiClient.instance.post(
-        '/uploads/presign',
-        {'content_type': 'image/jpeg'},
-      );
-      final String uploadUrl = presign['upload_url'];
-      final String fileUrl = presign['file_url'];
+      // 이미지 갯수에 따라 타입이 결정
+      final String postType = _pickedImages.length > 1 ? 'showcase' : 'post';
 
-      // 2단계: 이미지 바이트 읽기
-      final Uint8List imageBytes = await _pickedImage!.readAsBytes();
-      // 3단계: R2에 직접 업로드
-      final http.Response uploadResponse = await http.put(
-        Uri.parse(uploadUrl),
-        headers: {'Content-Type': 'image/jpeg'},
-        body: imageBytes,
-      );
+      final List<String> mediaUrls = [];
+      for (final image in _pickedImages) {
+        Shared.log('📸 이미지 업로드 시작: ${image.name}');
+        final presign = await ApiClient.instance.post(
+          '/uploads/presign',
+          {'content_type': 'image/jpeg'},
+        );
 
-      if (uploadResponse.statusCode != 200) {
-        throw Exception('업로드 실패: ${uploadResponse.statusCode}');
+        final String uploadUrl = presign['upload_url'];
+        final String finalUrl = presign['file_url'];
+
+        // 이미지 바이트 읽기
+        final Uint8List imageBytes = await image.readAsBytes();
+
+        final http.Response uploadResponse = await http.put(
+          Uri.parse(uploadUrl),
+          headers: {'Content-Type': 'image/jpeg'},
+          body: imageBytes,
+        );
+
+        if (uploadResponse.statusCode != 200) {
+          throw Exception('업로드 실패: ${uploadResponse.statusCode}');
+        }
+
+        mediaUrls.add(finalUrl);
       }
-      // 4단계: DB에 저장
-      final String? userId =
-          Provider.of<StoreProvider>(context, listen: false).userId;
+
       await ApiClient.instance.post('/posts', {
         'user_id': userId,
-        'media_url': fileUrl,
+        'media_urls': mediaUrls,
         'caption': _captionController.text,
+        'type': postType,
+        'tags': [],
       });
-
       // 완료: 홈으로 이동
       setState(() => _uploadStatus = UploadStatus.success);
       if (!mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (error) {
-      // TODO
-      Shared.log('❌ 업로드 실패: $error');
+      Shared.log('❌ 업로드 실패 상세: $error');
+      Shared.log('❌ 이미지 수: ${_pickedImages.length}');
       setState(() => _uploadStatus = UploadStatus.failed);
     }
   }
@@ -122,6 +128,7 @@ class _UploadScreenState extends State<UploadScreen> {
         })));
   }
 
+  //---------------------------------------------------------------------------
   Widget _buildTopbar(AppTheme theme) {
     return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -146,19 +153,16 @@ class _UploadScreenState extends State<UploadScreen> {
 
   //---------------------------------------------------------------------------
   Widget _buildImageArea(AppTheme theme, double size) {
-    return GestureDetector(
-      onTap: _pickImage,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: theme.colors.surface,
-          borderRadius: BorderRadius.circular(theme.radius.large),
-        ),
-        child: _pickedImage == null
-            ? Icon(Icons.add, size: 32, color: theme.colors.secondary)
-            : _buildImageWithOverlay(),
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: theme.colors.surface,
+        borderRadius: BorderRadius.circular(theme.radius.large),
       ),
+      child: _pickedImages.isEmpty
+          ? Icon(Icons.add, size: 32, color: theme.colors.secondary)
+          : _buildImageWithOverlay(),
     );
   }
 
@@ -186,7 +190,7 @@ class _UploadScreenState extends State<UploadScreen> {
   Widget _buildPreview() {
     if (kIsWeb) {
       return FutureBuilder<Uint8List>(
-          future: _pickedImage!.readAsBytes(),
+          future: _pickedImages[0].readAsBytes(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
@@ -196,7 +200,7 @@ class _UploadScreenState extends State<UploadScreen> {
     }
 
     return Image.file(
-      File(_pickedImage!.path),
+      File(_pickedImages[0].path),
       fit: BoxFit.cover,
     );
   }

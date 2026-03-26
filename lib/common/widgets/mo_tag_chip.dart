@@ -14,7 +14,7 @@ class MoTagChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.watch<ThemeProvider>().currentTheme.colors;
-    // TODO: implement build
+    
     return GestureDetector(
       onTap: onTap,
       child: Container(

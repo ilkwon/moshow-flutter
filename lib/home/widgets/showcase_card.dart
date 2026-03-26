@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:moshow/home/widgets/post_card.dart';
 
 //------------------------------------------------------------------------------
-class ShowcaseCard extends StatelessWidget {
+class ShowcaseCard extends StatelessWidget { 
   final List<Map<String, dynamic>>  items;
   
   const ShowcaseCard({super.key, required this.items});

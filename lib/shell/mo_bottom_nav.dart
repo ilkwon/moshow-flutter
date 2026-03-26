@@ -14,8 +14,6 @@ class MoBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    
     return BottomNavigationBar(
       currentIndex: currentTab.index,
       onTap: (int i) => onTabSelected(TabType.values[i]),

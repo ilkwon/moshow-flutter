@@ -5,12 +5,16 @@
 class AppConfig {
 // 앱 이름
   static const String appName = 'moshow';
-// 서버 주소
-  static const String apiBaseUrl =
-      'https://moshow-api-561685747014.asia-northeast3.run.app';
+
 
 // true면 실서버, false면 로컬 (localhost:8080)
-  static const bool isProduction = true;
+  static const bool isProduction = false;
+
+// 서버 주소
+static const String apiBaseUrl = isProduction 
+                              ? 'https://moshow-api-561685747014.asia-northeast3.run.app'
+                              : 'http://localhost:8080';
+                                                            
 // 피드 한 번에 불러올 게시물 수
   static const int pageSize = 10;
 

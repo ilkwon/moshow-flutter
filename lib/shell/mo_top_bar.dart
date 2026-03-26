@@ -14,8 +14,7 @@ class MoTopBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
+  Widget build(BuildContext context) {    
     return AppBar(
       backgroundColor: Colors.transparent,
       foregroundColor: Colors.white,

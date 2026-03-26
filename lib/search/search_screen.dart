@@ -12,8 +12,7 @@ class _SearchScreenState extends State<SearchScreen> {
   final _tags = ['전체', '공방', '워크숍', '스페이스', '클래스', '전시'];
   var _selectedTag = '전체';
   @override
-  void dispose() {
-    // TODO: implement dispose
+  void dispose() {    
     _searchController.dispose();
     super.dispose();
   }
