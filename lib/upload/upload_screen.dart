@@ -56,11 +56,12 @@ class _UploadScreenState extends State<UploadScreen> {
 
     setState(() => _uploadStatus = UploadStatus.uploading);
 
+    final List<String> mediaUrls = [];
     try {
       // 이미지 갯수에 따라 타입이 결정
-      final String postType = _pickedImages.length > 1 ? 'showcase' : 'post';
-
-      final List<String> mediaUrls = [];
+      //final String postType = _pickedImages.length > 1 ? 'showcase' : 'post';
+      final String postType = 'post';
+      
       for (final image in _pickedImages) {
         Shared.log('📸 이미지 업로드 시작: ${image.name}');
         final presign = await ApiClient.instance.post(
@@ -73,6 +74,7 @@ class _UploadScreenState extends State<UploadScreen> {
 
         // 이미지 바이트 읽기
         final Uint8List imageBytes = await image.readAsBytes();
+        Shared.log('📦 바이트 읽기 완료: ${imageBytes.length}');  // 추가
 
         final http.Response uploadResponse = await http.put(
           Uri.parse(uploadUrl),
@@ -80,6 +82,7 @@ class _UploadScreenState extends State<UploadScreen> {
           body: imageBytes,
         );
 
+        Shared.log('☁️ R2 응답: ${uploadResponse.statusCode}'); 
         if (uploadResponse.statusCode != 200) {
           throw Exception('업로드 실패: ${uploadResponse.statusCode}');
         }
@@ -87,6 +90,7 @@ class _UploadScreenState extends State<UploadScreen> {
         mediaUrls.add(finalUrl);
       }
 
+      Shared.log('📮 /posts 호출 시작, 이미지 수: ${mediaUrls.length}');
       await ApiClient.instance.post('/posts', {
         'user_id': userId,
         'media_urls': mediaUrls,
@@ -95,12 +99,14 @@ class _UploadScreenState extends State<UploadScreen> {
         'tags': [],
       });
       // 완료: 홈으로 이동
+      Shared.log('✅ /posts 완료');      
       setState(() => _uploadStatus = UploadStatus.success);
       if (!mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (error) {
       Shared.log('❌ 업로드 실패 상세: $error');
       Shared.log('❌ 이미지 수: ${_pickedImages.length}');
+      Shared.log('❌ 실패 시점 mediaUrls: $mediaUrls');  // 추가
       setState(() => _uploadStatus = UploadStatus.failed);
     }
   }

@@ -122,7 +122,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: isSelected 
                 ? const Color(0xFFD4A843)
                 : const Color(0xFFEEEEEE),
-                width: isSelected ? 2 : 3,
+                width: isSelected ? 2 : 1,
               ),
             ),
           ),

@@ -1,6 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:moshow/common/api_client.dart';
 import 'package:moshow/common/define.dart';
+import 'package:moshow/common/shared.dart';
 import 'package:moshow/home/widgets/home_sub_tab.dart';
 import 'package:moshow/home/widgets/post_card.dart';
 import 'package:moshow/home/widgets/showcase_card.dart';
@@ -8,9 +10,7 @@ import 'package:moshow/home/widgets/showcase_card.dart';
 
 //------------------------------------------------------------------------------
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, this.datas});
-
-  final dynamic datas;
+  const HomeScreen({super.key});  
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -20,6 +20,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _pageController = PageController();
   var _currentTab = HomeTabType.recommend;
+  var _feedStatus = FeedStatus.idle;
+  var _datas = <dynamic>[];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFeed();
+  }
 
   @override
   void dispose() {
@@ -41,17 +49,19 @@ class _HomeScreenState extends State<HomeScreen> {
           onTabSelected: (tab) => setState(() => _currentTab = tab),
         ),
       ),
-      body: Listener(
-        onPointerSignal: _onPointerSignal,
-        child: PageView.builder(
-          controller: _pageController,
-          scrollDirection: Axis.vertical,
-          physics: const ClampingScrollPhysics(),
-          itemCount: widget.datas.length,
-          itemBuilder: (context, index) => _buildFeedItem(index),
+      body: _datas.isEmpty 
+        ? const SizedBox.shrink() 
+        : Listener(
+          onPointerSignal: _onPointerSignal,
+          child: PageView.builder(
+            controller: _pageController,
+            scrollDirection: Axis.vertical,
+            physics: const ClampingScrollPhysics(),
+            itemCount: _datas.length,
+            itemBuilder: (context, index) => _buildFeedItem(index),
+          ),
         ),
-      ),
-    );
+      );
   }
 
   //----------------------------------------------------------------------------
@@ -73,9 +83,10 @@ class _HomeScreenState extends State<HomeScreen> {
   //----------------------------------------------------------------------------
   // 피드 아이템 하나
   Widget _buildFeedItem(int index) {
-    final Map<String, dynamic> item = widget.datas[index];
+    Shared.log('카드 빌드 : $index');
+    final Map<String, dynamic> item = _datas[index];
     final String type = item['type'] as String? ?? 'post';
-
+    Shared.log('🖼 imageUrl: ${(item['media_urls'] as List<dynamic>?)?.first}'); 
     if (type == 'showcase') {
       return ShowcaseCard(items: const []);
     }
@@ -86,7 +97,35 @@ class _HomeScreenState extends State<HomeScreen> {
       title: item['caption'] as String? ?? '',
       location: '',
       badge: type == 'sponsored' ? 'AD' : '',
+      postId: item['id'] as String? ?? '',
+      postUserId: item['user_id'] as String? ?? '',
+      onDeleted: () => _onPostDeleted(index),
     );
+  }
+  
+  Future<void> _loadFeed() async {
+    if(_feedStatus == FeedStatus.loading) return;
+
+    setState(() => _feedStatus = FeedStatus.loading);
+
+    try {
+      Shared.log('피드 로딩 시작');
+      
+      final List<dynamic> result = await ApiClient.instance.get('/feed');
+      
+      Shared.log('피드 결과 : ${result.length}개');
+      setState(() {
+        _datas = result;
+        _feedStatus = FeedStatus.done;
+      });
+    } catch (error) {
+      Shared.log('피드 로딩 오류: $error');
+      setState(() => _feedStatus = FeedStatus.error);
+    }
+  }
+  
+  void _onPostDeleted(int index) {
+    setState(() => _datas.removeAt(index));
   }
 
   //----------------------------------------------------------------------------

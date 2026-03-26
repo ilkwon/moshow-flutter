@@ -22,7 +22,9 @@ class ShowcaseCard extends StatelessWidget {
       imageUrl: item['imageUrl'] as String? ?? '',
       title: item['title'] as String? ?? '', 
       location: item['location'] as String? ?? '', 
-      badge: item['badge'] as String? ?? ''
+      badge: item['badge'] as String? ?? '',
+      postId: item['id'] as String? ?? '',
+      postUserId: item['user_id'] as String? ?? '',
     );
   }
 }
