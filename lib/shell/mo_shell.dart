@@ -34,7 +34,8 @@ class _MoShellState extends State<MoShell> {
 
 
   var _feedVersion = 0;
-  
+  var _profileVersion = 0;
+
   @override
   void initState() {
     super.initState();
@@ -82,19 +83,45 @@ class _MoShellState extends State<MoShell> {
         index: stackIndex,
         children: [
           HomeScreen(
-            key: ValueKey(_feedVersion),            
-          ),
+            key: ValueKey(_feedVersion),                        
+            onPostDeleted: () => setState(() 
+              => _profileVersion++)),  // 홈 탭에서 게시글이 삭제될 때 프로필 탭도 새로고침되도록 콜백 전달
           const SearchScreen(),
           const CollectScreen(),
-          const ProfileScreen(),
+          ProfileScreen(
+            key: ValueKey(_profileVersion), // 프로필 탭 전환 시마다 새로고침 위해 key 업데이트
+          ),
         ],
       ),
       bottomNavigationBar: MoBottomNav(
           currentTab: tabIndex,
           onTabSelected: (TabType tab) async {
             // 업로드 탭 선택 시 모달로 업로드 화면 표시
-            if (tab == TabType.upload) {
-              final picker = ImagePicker();
+            if (tab == TabType.upload) { await _tabToUpload(); }
+            //else if (tab == TabType.profile){
+            //  setState(() {
+            //    tabIndex = tab;
+            //    _profileVersion++;
+            //  });
+            //}
+            else {
+              setState(() => tabIndex = tab);
+            }
+          }),
+    );
+  }
+
+  //--------------------------------------------------------------------------
+  // 피드 새로고침
+  Future<void> refreshFeed() async {
+    setState(() {
+       _feedVersion++;
+       _profileVersion++;
+    });
+  }
+  
+  Future<void> _tabToUpload() async {
+    final picker = ImagePicker();
               final List<XFile> pickedImages = await picker.pickMultiImage(
                 imageQuality: 85,
               );
@@ -110,17 +137,6 @@ class _MoShellState extends State<MoShell> {
                     ),
                   )
                   .then((_) => refreshFeed()); // 업로드 후 피드 새로고침
-            } else {
-              setState(() => tabIndex = tab);
-            }
-          }),
-    );
-  }
-
-  //--------------------------------------------------------------------------
-  // 피드 새로고침
-  Future<void> refreshFeed() async {
-    setState(() => _feedVersion++ );
   }
 
   //--------------------------------------------------------------------------

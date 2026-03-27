@@ -10,10 +10,12 @@ import 'package:moshow/home/widgets/showcase_card.dart';
 
 //------------------------------------------------------------------------------
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});  
-
+  final VoidCallback? onPostDeleted;
+  const HomeScreen({super.key, this.onPostDeleted});
+  
   @override
   State<HomeScreen> createState() => _HomeScreenState();
+
 }
 
 //------------------------------------------------------------------------------
@@ -34,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _pageController.dispose();
     super.dispose();
   }
+
 
   //----------------------------------------------------------------------------
   @override
@@ -124,8 +127,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
   
-  void _onPostDeleted(int index) {
+   void _onPostDeleted(int index) {
+    Shared.log('🗑 게시물 삭제 콜백 호출');
     setState(() => _datas.removeAt(index));
+    widget.onPostDeleted?.call();
   }
 
   //----------------------------------------------------------------------------

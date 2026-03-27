@@ -159,7 +159,7 @@ class PostCard extends StatelessWidget {
   }
   
   void _deletePost(BuildContext context) async {
-    final String? userId =  Provider.of<StoreProvider>(context, listen: false).userId;
+    final String? userId =  Provider.of<StoreProvider>(context, listen: false).token;
 
     try{
       await ApiClient.instance.delete('/posts', {
