@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:moshow/common/api_client.dart';
 import 'package:moshow/common/define.dart';
 import 'package:moshow/common/providers/app_provider.dart';
@@ -20,6 +19,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   var _profileStatus = FeedStatus.idle;
   Map<String, dynamic>? _profile;
   var _posts = <dynamic>[];
+  var _stars = <dynamic>[];
 
   @override
   void initState() {
@@ -31,14 +31,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _profileStatus = FeedStatus.loading);
 
     try {
+      Shared.log('📡 프로필 요청: /users/?id=$userId');
       final profile = await ApiClient.instance.get('/users/?id=$userId');
-      Shared.log('✅ 프로필 데이터 로드 성공: $profile');
+      
+      Shared.log('📡 게시물 요청: /users/$userId/posts');
       final posts = await ApiClient.instance.get('/users/$userId/posts');
+      
+      Shared.log('📡 스타 요청: /ratings?user_id=$userId');
+      final stars = await ApiClient.instance.get('/ratings?user_id=$userId');
+
       setState(() {
         _profile = profile;
         _posts = posts;
+        _stars = stars;
         _profileStatus = FeedStatus.done;
       });
+      final String username = profile['username'] as String? ?? 'Unknown';
+      if (context.mounted) {
+        Provider.of<StoreProvider>(context, listen: false).username = username;
+      }
     } catch (error) {
       Shared.log('❌ 프로필 로딩 오류: $error');
       setState(() => _profileStatus = FeedStatus.error);
@@ -139,9 +150,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildStatItem('팔로워', _profile?['follower_count'] as int? ?? 0),
-        _buildStatItem('팔로잉', _profile?['following_count'] as int? ?? 0),
-        _buildStatItem('게시물', _profile?['post_count'] as int? ?? 0),
+        _buildStatItem('팔로워', (_profile?['follower_count'] as num?)?.toInt() ?? 0),
+        _buildStatItem('팔로잉', (_profile?['following_count'] as num?)?.toInt() ?? 0),
+        _buildStatItem('게시물', (_profile?['post_count'] as num?)?.toInt() ?? 0),
       ],
     );
   }
@@ -220,6 +231,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   //----------------------------------------------------------------------------
   SliverGrid _buildGrid() {
+    final data = _currentTab == 0 ? _posts : _stars; 
+
     return SliverGrid(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -227,15 +240,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         mainAxisSpacing: 4,
       ),
       delegate: SliverChildBuilderDelegate(
-        (context, index) => _buildGridItem(index),
-        childCount: _posts.length,
+        (context, index) => _buildGridItem(data, index),
+        childCount: data.length,
       ),
     );
   }
 
   //----------------------------------------------------------------------------
-  Widget _buildGridItem(int index) {
-    final Map<String, dynamic> post = _posts[index];
+  Widget _buildGridItem(List<dynamic> data, int index) {
+    final Map<String, dynamic> post = data[index];
     final String imageUrl =
         (post['media_urls'] as List<dynamic>?)?.first as String? ?? '';
 

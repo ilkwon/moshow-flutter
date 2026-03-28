@@ -14,6 +14,9 @@ class PostCard extends StatelessWidget {
   final String postUserId;
   final VoidCallback? onDeleted;
 
+  final bool isStared; 
+  final VoidCallback? onStar; 
+
   const PostCard({
     super.key,
     required this.imageUrl,
@@ -23,6 +26,8 @@ class PostCard extends StatelessWidget {
     required this.postId,
     required this.postUserId,
     this.onDeleted,
+    this.isStared = false,
+    this.onStar,
   });
 
   //----------------------------------------------------------------------------
@@ -85,6 +90,7 @@ class PostCard extends StatelessWidget {
           _buildTitle(),
           const SizedBox(height: 4),
           _buildLocation(),
+          _buildStarButton(),
         ],
       ),
     );
@@ -159,7 +165,7 @@ class PostCard extends StatelessWidget {
   }
   
   void _deletePost(BuildContext context) async {
-    final String? userId =  Provider.of<StoreProvider>(context, listen: false).token;
+    final String? userId =  Provider.of<StoreProvider>(context, listen: false).userId;
 
     try{
       await ApiClient.instance.delete('/posts', {
@@ -171,6 +177,17 @@ class PostCard extends StatelessWidget {
     } catch (error){
       Shared.log('삭제 실패: $error');
     }
+  }
+  
+  Widget _buildStarButton() {
+    return GestureDetector(
+      onTap: onStar,
+      child: Icon(
+        isStared ? Icons.star : Icons.star_border,
+        color: isStared ? const Color(0xFFD4A843) : Colors.white,
+        size: 28,
+      ),      
+    );
   }
   //----------------------------------------------------------------------------
 }

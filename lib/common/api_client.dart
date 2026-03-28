@@ -47,8 +47,15 @@ class ApiClient {
   dynamic _processResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return json.decode(response.body);  // Json 문자열 -> Dart 객체 (Map/List)
-    } else {
+    } else if (response.statusCode == 409) {
+      return json.decode(response.body);  // 충돌은 에러로 간주 하지 않음.
+    }
+     else {
       throw Exception('API 오류: ${response.statusCode} ${response.reasonPhrase}');
     }
+  }
+
+  void setToken(String token) {
+    _headers['Authorization'] = 'Bearer $token';  
   }
 }

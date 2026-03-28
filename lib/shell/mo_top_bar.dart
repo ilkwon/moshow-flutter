@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moshow/common/define.dart';
+import 'package:moshow/common/providers/app_provider.dart';
+import 'package:provider/provider.dart';
 
 //------------------------------------------------------------------------------
 class MoTopBar extends StatelessWidget implements PreferredSizeWidget {
@@ -20,8 +22,8 @@ class MoTopBar extends StatelessWidget implements PreferredSizeWidget {
       foregroundColor: Colors.white,
       elevation: 0,
       leading: _buildLeading(),
-      title: _buildTitle(),
-      actions: _buildActions(),
+      title: _buildTitle(context),
+      actions: _buildActions(context),
     );
   }
 
@@ -32,19 +34,19 @@ class MoTopBar extends StatelessWidget implements PreferredSizeWidget {
     return null;
   }
 
-  Widget? _buildTitle() {
+  Widget? _buildTitle(BuildContext context) {
     return switch (currentTab) {
       TabType.home => const Text(
         'moshow',
         style: TextStyle(color: Colors.white)),
       TabType.search => const Text('탐색'),
       TabType.collect => const Text('컬렉션'),
-      TabType.profile => const Text('프로필'),
+      TabType.profile => _buildProfileTitle(context),
       _ => null,
     };
   }
 
-  List<Widget> _buildActions() {
+  List<Widget> _buildActions(BuildContext context) {
     if (currentTab == TabType.home) {
       return [
         const Icon(Icons.notifications_none),
@@ -52,5 +54,10 @@ class MoTopBar extends StatelessWidget implements PreferredSizeWidget {
       ];
     }
     return [];
+  }
+  
+  Widget _buildProfileTitle(BuildContext context) {    
+    final String? username = Provider.of<StoreProvider>(context, listen: false).username;
+    return Text(username != null ? '@$username' : '프로필');
   }
 }

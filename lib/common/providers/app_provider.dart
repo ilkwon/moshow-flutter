@@ -12,9 +12,14 @@ class StoreProvider extends ChangeNotifier
 
   String? userId;
   String? token;
-
+  String? username; // 향후 사용자 이름도 저장할 수 있도록 확장
   // 앱시작시 호출
   Future<void> initUser() async {
+    // 개발용 임시 고정
+    //userId = '8d72cf4bc25257708d61ea5272d329ec';
+    //notifyListeners();
+    //return;
+
     final savedToken = await _storage.read(key: _tokenKey);
     Shared.log('저장된 토큰: $savedToken');
     
@@ -25,7 +30,7 @@ class StoreProvider extends ChangeNotifier
       final jwt = JWT.decode(savedToken);
       userId = jwt.payload['user_id'] as String;
       Shared.log('✅ 기존 토큰에서 user_id 복원: $userId');
-
+      ApiClient.instance.setToken(savedToken);
       notifyListeners();
       return;
     }
@@ -34,7 +39,7 @@ class StoreProvider extends ChangeNotifier
     final data = await  ApiClient.instance.post('/auth/guest', {});
     userId = data['user_id'] as String;
     token = data['token'] as String;
-
+    ApiClient.instance.setToken(token!);
     await _storage.write(key: _tokenKey, value: token);
     Shared.log('✅ 새로운 user_id 발급: $token');
     notifyListeners();
