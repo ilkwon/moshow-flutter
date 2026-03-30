@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   var _currentTab = HomeTabType.recommend;
   var _feedStatus = FeedStatus.idle;
   var _datas = <dynamic>[];
-
+  
   @override
   void initState() {
     super.initState();
@@ -37,6 +37,27 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  //----------------------------------------------------------------------------
+  Future<void> _loadFeed() async {
+    if (_feedStatus == FeedStatus.loading) return;
+
+    setState(() => _feedStatus = FeedStatus.loading);
+
+    try {
+      Shared.log('피드 로딩 시작');
+
+      final List<dynamic> result = await ApiClient.instance.get('/feed');
+      final List<dynamic> showcases = await ApiClient.instance.get('/showcase');
+      Shared.log('피드 결과 : ${result.length}개');
+      setState(() {        
+        _mergeFeedWithShowcases(result, showcases);
+        _feedStatus = FeedStatus.done;
+      });
+    } catch (error) {
+      Shared.log('피드 로딩 오류: $error');
+      setState(() => _feedStatus = FeedStatus.error);
+    }
+  }
   //----------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
@@ -89,9 +110,12 @@ class _HomeScreenState extends State<HomeScreen> {
     Shared.log('카드 빌드 : $index');
     final Map<String, dynamic> item = _datas[index];
     final String type = item['type'] as String? ?? 'post';
-    Shared.log('🖼 imageUrl: ${(item['media_urls'] as List<dynamic>?)?.first}');
+    
     if (type == 'showcase') {
-      return ShowcaseCard(items: const []);
+      final List<Map<String, dynamic>> items = (item['items'] as List<dynamic>)
+          .map((e) => e as Map<String, dynamic>)
+          .toList();
+      return ShowcaseCard(items: items);
     }
 
     return PostCard(
@@ -111,27 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   //----------------------------------------------------------------------------
-  Future<void> _loadFeed() async {
-    if (_feedStatus == FeedStatus.loading) return;
-
-    setState(() => _feedStatus = FeedStatus.loading);
-
-    try {
-      Shared.log('피드 로딩 시작');
-
-      final List<dynamic> result = await ApiClient.instance.get('/feed');
-
-      Shared.log('피드 결과 : ${result.length}개');
-      setState(() {
-        _datas = result;
-        _feedStatus = FeedStatus.done;
-      });
-    } catch (error) {
-      Shared.log('피드 로딩 오류: $error');
-      setState(() => _feedStatus = FeedStatus.error);
-    }
-  }
-
+  //
   void _onPostDeleted(int index) {
     Shared.log('🗑 게시물 삭제 콜백 호출');
     setState(() => _datas.removeAt(index));
@@ -167,6 +171,26 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (error) {
       Shared.log('❌ 스타 실패: $error');
     }
+  }
+  
+  void _mergeFeedWithShowcases(List<dynamic> posts, List<dynamic> showcases) {
+    if (showcases.isEmpty){
+      _datas = posts;
+      return;
+    }
+
+    final merged = <dynamic>[];
+    int showcaseIndex = 0;
+    for (int i =0; i<posts.length; i++){
+      merged.add(posts[i]);
+      
+      if ((i+1) % 5 == 0 && showcaseIndex < showcases.length){
+        merged.add(showcases[showcaseIndex]);
+        showcaseIndex++;
+      }
+    }
+
+    _datas = merged;
   }
 
   //----------------------------------------------------------------------------
