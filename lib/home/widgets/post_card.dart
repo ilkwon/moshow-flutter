@@ -139,12 +139,18 @@ class PostCard extends StatelessWidget {
 
   //----------------------------------------------------------------------------
   Widget _buildMenuButton(BuildContext context) {
+
+    final String? myUserId = Provider.of<StoreProvider>(context, listen: false).userId;
+    Shared.log("#### my:$myUserId:post:$postUserId");
+    
+    if (myUserId != postUserId) return const SizedBox.shrink();
+
     return GestureDetector(
       onTap: () => _showMenu(context),
       child: const Icon(Icons.more_vert, color: Colors.white),
     );
   }
-  
+  //----------------------------------------------------------------------------
   void _showMenu(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -163,7 +169,7 @@ class PostCard extends StatelessWidget {
       ))
     );
   }
-  
+  //----------------------------------------------------------------------------
   void _deletePost(BuildContext context) async {
     final String? userId =  Provider.of<StoreProvider>(context, listen: false).userId;
 
@@ -178,7 +184,7 @@ class PostCard extends StatelessWidget {
       Shared.log('삭제 실패: $error');
     }
   }
-  
+  //----------------------------------------------------------------------------
   Widget _buildStarButton() {
     return GestureDetector(
       onTap: onStar,
