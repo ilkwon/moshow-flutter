@@ -8,7 +8,7 @@ class AppConfig {
 
 
 // true면 실서버, false면 로컬 (localhost:8080)
-  static const bool isProduction = false;
+  static const bool isProduction = true;
 
 // 서버 주소
 static const String apiBaseUrl = isProduction 
