@@ -19,7 +19,7 @@ class HomeScreen extends StatefulWidget {
 
 //------------------------------------------------------------------------------
 class _HomeScreenState extends State<HomeScreen> {
-  static const _snapCardHeight = 360.0;
+  static const _snapViewportFraction = 0.8;
   static const _bottomListPadding = 96.0;
 
   PageController? _pageController;
@@ -102,10 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: EdgeInsets.fromLTRB(0, topPadding, 0, bottomPadding),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final viewportFraction = _calculateViewportFraction(
-            constraints.maxHeight,
-          );
-          _ensurePageController(viewportFraction);
+          _ensurePageController(_snapViewportFraction);
 
           return PageView.builder(
             controller: _pageController,
@@ -230,13 +227,6 @@ class _HomeScreenState extends State<HomeScreen> {
       if (value.isNotEmpty) return value;
     }
     return '';
-  }
-
-  double _calculateViewportFraction(double viewportHeight) {
-    if (viewportHeight <= 0) return 1.0;
-
-    final fraction = _snapCardHeight / viewportHeight;
-    return fraction.clamp(0.35, 1.0);
   }
 
   void _ensurePageController(double nextViewportFraction) {
