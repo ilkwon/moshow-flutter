@@ -6,15 +6,14 @@ class AppConfig {
 // 앱 이름
   static const String appName = 'moshow';
 
-
 // true면 실서버, false면 로컬 (localhost:8080)
   static const bool isProduction = true;
 
 // 서버 주소
-static const String apiBaseUrl = isProduction 
-                              ? 'https://moshow-api-561685747014.asia-northeast3.run.app'
-                              : 'http://localhost:8080';
-                                                            
+  static const String apiBaseUrl = isProduction
+      ? 'https://moshow-api-561685747014.asia-northeast3.run.app'
+      : 'http://localhost:8080';
+
 // 피드 한 번에 불러올 게시물 수
   static const int pageSize = 10;
 
@@ -35,13 +34,18 @@ enum TabType {
 }
 
 enum HomeTabType { recommend, workshop, space, klass }
+
 extension HomeTabTypeLabel on HomeTabType {
   String get label {
     switch (this) {
-      case HomeTabType.recommend: return '추천';
-      case HomeTabType.workshop: return '워크샵';
-      case HomeTabType.space: return '스페이스';
-      case HomeTabType.klass: return '클래스';
+      case HomeTabType.recommend:
+        return '추천';
+      case HomeTabType.workshop:
+        return '워크샵';
+      case HomeTabType.space:
+        return '스페이스';
+      case HomeTabType.klass:
+        return '클래스';
     }
   }
 }
@@ -83,10 +87,10 @@ enum PostStatus {
 // 피드 로딩 상태
 // ----------------------------------------------------------------------------
 enum FeedStatus {
-  idle,     // 대기
-  loading,  // 로딩 중
-  done,     // 완료
-  error,    // 오류
+  idle, // 대기
+  loading, // 로딩 중
+  done, // 완료
+  error, // 오류
 }
 
 // ----------------------------------------------------------------------------

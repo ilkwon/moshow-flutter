@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:moshow/common/api_client.dart';
 import 'package:moshow/common/define.dart';
@@ -20,21 +19,17 @@ class HomeScreen extends StatefulWidget {
 
 //------------------------------------------------------------------------------
 class _HomeScreenState extends State<HomeScreen> {
-  final _pageController = PageController();
+  static const _feedItemSpacing = 20.0;
+  static const _bottomListPadding = 96.0;
+
   var _currentTab = HomeTabType.recommend;
   var _feedStatus = FeedStatus.idle;
-  var _datas = <dynamic>[];
+  var _feedItems = <Map<String, dynamic>>[];
   
   @override
   void initState() {
     super.initState();
     _loadFeed();
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
   }
 
   //----------------------------------------------------------------------------
@@ -47,10 +42,9 @@ class _HomeScreenState extends State<HomeScreen> {
       Shared.log('피드 로딩 시작');
 
       final List<dynamic> result = await ApiClient.instance.get('/feed');
-      final List<dynamic> showcases = await ApiClient.instance.get('/showcase');
       Shared.log('피드 결과 : ${result.length}개');
-      setState(() {        
-        _mergeFeedWithShowcases(result, showcases);
+      setState(() {
+        _feedItems = result.whereType<Map<String, dynamic>>().toList();
         _feedStatus = FeedStatus.done;
       });
     } catch (error) {
@@ -72,62 +66,56 @@ class _HomeScreenState extends State<HomeScreen> {
           onTabSelected: (tab) => setState(() => _currentTab = tab),
         ),
       ),
-      body: _datas.isEmpty
-          ? const SizedBox.shrink()
-          : Listener(
-              onPointerSignal: _onPointerSignal,
-              child: PageView.builder(
-                controller: _pageController,
-                scrollDirection: Axis.vertical,
-                physics: const ClampingScrollPhysics(),
-                itemCount: _datas.length,
-                itemBuilder: (context, index) => _buildFeedItem(index),
-              ),
-            ),
+      body: _buildBody(),
     );
   }
 
   //----------------------------------------------------------------------------
-  void _onPointerSignal(PointerSignalEvent event) {
-    if (event is! PointerScrollEvent) return;
-
-    if (event.scrollDelta.dy > 0) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+  Widget _buildBody() {
+    if (_feedStatus == FeedStatus.loading) {
+      return const Center(child: CircularProgressIndicator());
     }
+
+    if (_feedStatus == FeedStatus.error) {
+      return const Center(child: Text('피드를 불러오지 못했습니다.'));
+    }
+
+    if (_feedItems.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final topPadding = MediaQuery.of(context).padding.top + kToolbarHeight + 12;
+    final bottomPadding = MediaQuery.of(context).padding.bottom + _bottomListPadding;
+
+    return ListView.separated(
+      padding: EdgeInsets.fromLTRB(0, topPadding, 0, bottomPadding),
+      itemCount: _feedItems.length,
+      separatorBuilder: (_, __) => const SizedBox(height: _feedItemSpacing),
+      itemBuilder: (context, index) => _buildFeedItem(index),
+    );
   }
 
   //----------------------------------------------------------------------------
   // 피드 아이템 하나
   Widget _buildFeedItem(int index) {
-    Shared.log('카드 빌드 : $index');
-    final Map<String, dynamic> item = _datas[index];
+    final item = _feedItems[index];
     final String type = item['type'] as String? ?? 'post';
-    
+
     if (type == 'showcase') {
-      final List<Map<String, dynamic>> items = (item['items'] as List<dynamic>)
-          .map((e) => e as Map<String, dynamic>)
-          .toList();
+      final List<Map<String, dynamic>> items = _extractShowcaseItems(item);
       return ShowcaseCard(items: items);
     }
 
     return PostCard(
-      //imageUrl: item['media_url'] as String? ?? '',
-      imageUrl: (item['media_urls'] as List<dynamic>?)?.first as String? ?? '',
+      imageUrl: _extractPrimaryImageUrl(item),
       title: item['caption'] as String? ?? '',
-      location: '',
       badge: type == 'sponsored' ? 'AD' : '',
       postId: item['id'] as String? ?? '',
       postUserId: item['user_id'] as String? ?? '',
       onDeleted: () => _onPostDeleted(index),
       isStared: item['is_starred'] as bool? ?? false,
+      authorName: _extractAuthorName(item),
+      tags: _extractTags(item),
       onStar: () => _onStar(
         item['id'] as String? ?? '', 
         item['is_starred'] as bool? ?? false),
@@ -138,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
   //
   void _onPostDeleted(int index) {
     Shared.log('🗑 게시물 삭제 콜백 호출');
-    setState(() => _datas.removeAt(index));
+    setState(() => _feedItems.removeAt(index));
     widget.onPostDeleted?.call();
   }
 
@@ -163,34 +151,55 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       setState(() {
-        final index = _datas.indexWhere((item) => item['id'] == postId);
+        final index = _feedItems.indexWhere((item) => item['id'] == postId);
         if (index != -1) {
-          _datas[index]['is_starred'] = !isStarred;
+          _feedItems[index]['is_starred'] = !isStarred;
         }
       });
     } catch (error) {
       Shared.log('❌ 스타 실패: $error');
     }
   }
-  
-  void _mergeFeedWithShowcases(List<dynamic> posts, List<dynamic> showcases) {
-    if (showcases.isEmpty){
-      _datas = posts;
-      return;
-    }
 
-    final merged = <dynamic>[];
-    int showcaseIndex = 0;
-    for (int i =0; i<posts.length; i++){
-      merged.add(posts[i]);
-      
-      if ((i+1) % 5 == 0 && showcaseIndex < showcases.length){
-        merged.add(showcases[showcaseIndex]);
-        showcaseIndex++;
-      }
-    }
+  List<String> _extractTags(Map<String, dynamic> item) {
+    final dynamic rawTags = item['tags'];
+    if (rawTags is! List) return const [];
 
-    _datas = merged;
+    return rawTags
+        .map((e) => e?.toString().trim() ?? '')
+        .where((tag) => tag.isNotEmpty)
+        .toList();
+  }
+
+  List<Map<String, dynamic>> _extractShowcaseItems(Map<String, dynamic> item) {
+    final dynamic rawItems = item['items'];
+    if (rawItems is! List) return const [];
+
+    return rawItems.whereType<Map<String, dynamic>>().toList();
+  }
+
+  String _extractPrimaryImageUrl(Map<String, dynamic> item) {
+    final dynamic mediaUrls = item['media_urls'];
+    if (mediaUrls is List && mediaUrls.isNotEmpty) {
+      return mediaUrls.first.toString();
+    }
+    return '';
+  }
+
+  String _extractAuthorName(Map<String, dynamic> item) {
+    final candidates = [
+      item['username'],
+      item['author_name'],
+      item['user_name'],
+      item['nickname'],
+      item['name'],
+    ];
+
+    for (final candidate in candidates) {
+      final value = candidate?.toString().trim() ?? '';
+      if (value.isNotEmpty) return value;
+    }
+    return '';
   }
 
   //----------------------------------------------------------------------------

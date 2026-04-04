@@ -27,7 +27,6 @@ class ShowcaseCard extends StatelessWidget {
     return PostCard(
       imageUrl: (item['media_urls'] as List<dynamic>?)?.first as String? ?? '',
       title: item['caption'] as String? ?? '',
-      location: '',
       badge: 'showcase',
       postId: item['post_id'] as String? ?? '',
       postUserId: '',

@@ -9,7 +9,7 @@ var theme = ThemeData(
         splashFactory: NoSplash.splashFactory, // ✅ 터치 애니메이션 제거
 
         appBarTheme: AppBarTheme(
-          color: const Color.fromARGB(255, 228, 243, 253),
+          backgroundColor: const Color.fromARGB(255, 228, 243, 253),
           elevation: 1,
           titleTextStyle: TextStyle(color:Colors.blue.shade300, fontSize: 25),
           actionsIconTheme: IconThemeData(color: Colors.black)
