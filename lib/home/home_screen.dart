@@ -19,8 +19,11 @@ class HomeScreen extends StatefulWidget {
 
 //------------------------------------------------------------------------------
 class _HomeScreenState extends State<HomeScreen> {
-  static const _feedItemSpacing = 20.0;
+  static const _snapCardHeight = 360.0;
   static const _bottomListPadding = 96.0;
+
+  PageController? _pageController;
+  double _viewportFraction = 1.0;
 
   var _currentTab = HomeTabType.recommend;
   var _feedStatus = FeedStatus.idle;
@@ -30,6 +33,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadFeed();
+  }
+
+  @override
+  void dispose() {
+    _pageController?.dispose();
+    super.dispose();
   }
 
   //----------------------------------------------------------------------------
@@ -84,14 +93,35 @@ class _HomeScreenState extends State<HomeScreen> {
       return const SizedBox.shrink();
     }
 
-    final topPadding = MediaQuery.of(context).padding.top + kToolbarHeight + 12;
-    final bottomPadding = MediaQuery.of(context).padding.bottom + _bottomListPadding;
+    final topPadding =
+        MediaQuery.of(context).padding.top + kToolbarHeight + 12;
+    final bottomPadding =
+        MediaQuery.of(context).padding.bottom + _bottomListPadding;
 
-    return ListView.separated(
+    return Padding(
       padding: EdgeInsets.fromLTRB(0, topPadding, 0, bottomPadding),
-      itemCount: _feedItems.length,
-      separatorBuilder: (_, __) => const SizedBox(height: _feedItemSpacing),
-      itemBuilder: (context, index) => _buildFeedItem(index),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final viewportFraction = _calculateViewportFraction(
+            constraints.maxHeight,
+          );
+          _ensurePageController(viewportFraction);
+
+          return PageView.builder(
+            controller: _pageController,
+            padEnds: false,
+            scrollDirection: Axis.vertical,
+            physics: const PageScrollPhysics(),
+            itemCount: _feedItems.length,
+            itemBuilder: (context, index) {
+              return Align(
+                alignment: Alignment.topCenter,
+                child: _buildFeedItem(index),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -200,6 +230,35 @@ class _HomeScreenState extends State<HomeScreen> {
       if (value.isNotEmpty) return value;
     }
     return '';
+  }
+
+  double _calculateViewportFraction(double viewportHeight) {
+    if (viewportHeight <= 0) return 1.0;
+
+    final fraction = _snapCardHeight / viewportHeight;
+    return fraction.clamp(0.35, 1.0);
+  }
+
+  void _ensurePageController(double nextViewportFraction) {
+    if (_pageController == null) {
+      _viewportFraction = nextViewportFraction;
+      _pageController = PageController(viewportFraction: _viewportFraction);
+      return;
+    }
+
+    if ((nextViewportFraction - _viewportFraction).abs() < 0.001) return;
+
+    final int initialPage =
+        (_pageController!.hasClients ? _pageController!.page : null)
+            ?.round() ??
+        _pageController!.initialPage;
+
+    _pageController!.dispose();
+    _viewportFraction = nextViewportFraction;
+    _pageController = PageController(
+      initialPage: initialPage,
+      viewportFraction: _viewportFraction,
+    );
   }
 
   //----------------------------------------------------------------------------
