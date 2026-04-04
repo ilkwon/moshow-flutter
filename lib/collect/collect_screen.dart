@@ -88,14 +88,14 @@ class _CollectScreenState extends State<CollectScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) => _loadData(userId));
     }
 
-    final bottomInset = MediaQuery.of(context).padding.bottom + 92;
+    final bottomInset = MediaQuery.of(context).padding.bottom + 88;
 
     return Stack(
       children: [
         _buildBody(context),
         if (_currentTab == 0)
           Positioned(
-            right: 20,
+            right: 24,
             bottom: bottomInset,
             child: _buildCreateCollectionButton(context),
           ),
@@ -107,14 +107,14 @@ class _CollectScreenState extends State<CollectScreen> {
     return Material(
       color: const Color(0xFFD4A843),
       shape: const CircleBorder(),
-      elevation: 4,
+      elevation: 5,
       child: InkWell(
         customBorder: const CircleBorder(),
         onTap: () => _showCreateCollectionSheet(context),
         child: const SizedBox(
-          width: 56,
-          height: 56,
-          child: Icon(Icons.add, color: Colors.white, size: 28),
+          width: 52,
+          height: 52,
+          child: Icon(Icons.add_circle_outline, color: Colors.white, size: 28),
         ),
       ),
     );
