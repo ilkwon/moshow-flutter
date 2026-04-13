@@ -30,6 +30,7 @@ class ShowcaseCard extends StatelessWidget {
       badge: 'showcase',
       postId: item['post_id'] as String? ?? '',
       postUserId: '',
+      fullscreen: true,
     );
   }
 

@@ -19,11 +19,7 @@ class HomeScreen extends StatefulWidget {
 
 //------------------------------------------------------------------------------
 class _HomeScreenState extends State<HomeScreen> {
-  static const _snapViewportFraction = 0.8;
-  static const _bottomListPadding = 96.0;
-
-  PageController? _pageController;
-  double _viewportFraction = 1.0;
+  final PageController _pageController = PageController();
 
   var _currentTab = HomeTabType.recommend;
   var _feedStatus = FeedStatus.idle;
@@ -37,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    _pageController?.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -64,19 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
   //----------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        toolbarHeight: 0,
-        bottom: HomeSubTab(
-          currentTab: _currentTab,
-          onTabSelected: (tab) => setState(() => _currentTab = tab),
-        ),
-      ),
-      body: _buildBody(),
-    );
+    return Scaffold(backgroundColor: Colors.transparent, body: _buildBody());
   }
 
   //----------------------------------------------------------------------------
@@ -93,32 +77,28 @@ class _HomeScreenState extends State<HomeScreen> {
       return const SizedBox.shrink();
     }
 
-    final topPadding =
-        MediaQuery.of(context).padding.top + kToolbarHeight + 12;
-    final bottomPadding =
-        MediaQuery.of(context).padding.bottom + _bottomListPadding;
+    final double topInset =
+        MediaQuery.of(context).padding.top + kToolbarHeight + 10;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(0, topPadding, 0, bottomPadding),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          _ensurePageController(_snapViewportFraction);
-
-          return PageView.builder(
-            controller: _pageController,
-            padEnds: false,
-            scrollDirection: Axis.vertical,
-            physics: const PageScrollPhysics(),
-            itemCount: _feedItems.length,
-            itemBuilder: (context, index) {
-              return Align(
-                alignment: Alignment.topCenter,
-                child: _buildFeedItem(index),
-              );
-            },
-          );
-        },
-      ),
+    return Stack(
+      children: [
+        PageView.builder(
+          controller: _pageController,
+          scrollDirection: Axis.vertical,
+          physics: const PageScrollPhysics(),
+          itemCount: _feedItems.length,
+          itemBuilder: (context, index) => _buildFeedItem(index),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          top: topInset,
+          child: HomeSubTab(
+            currentTab: _currentTab,
+            onTabSelected: (tab) => setState(() => _currentTab = tab),
+          ),
+        ),
+      ],
     );
   }
 
@@ -143,6 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
       isStared: item['is_starred'] as bool? ?? false,
       authorName: _extractAuthorName(item),
       tags: _extractTags(item),
+      fullscreen: true,
       onStar: () => _onStar(
         item['id'] as String? ?? '', 
         item['is_starred'] as bool? ?? false),
@@ -229,27 +210,4 @@ class _HomeScreenState extends State<HomeScreen> {
     return '';
   }
 
-  void _ensurePageController(double nextViewportFraction) {
-    if (_pageController == null) {
-      _viewportFraction = nextViewportFraction;
-      _pageController = PageController(viewportFraction: _viewportFraction);
-      return;
-    }
-
-    if ((nextViewportFraction - _viewportFraction).abs() < 0.001) return;
-
-    final int initialPage =
-        (_pageController!.hasClients ? _pageController!.page : null)
-            ?.round() ??
-        _pageController!.initialPage;
-
-    _pageController!.dispose();
-    _viewportFraction = nextViewportFraction;
-    _pageController = PageController(
-      initialPage: initialPage,
-      viewportFraction: _viewportFraction,
-    );
-  }
-
-  //----------------------------------------------------------------------------
 }

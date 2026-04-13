@@ -20,15 +20,13 @@ class ApiClient {
     final response = await http.get(url, headers: _headers);
     return _processResponse(response);
   }
-  
+
   // POST 요청
   Future<dynamic> post(String path, Map<String, dynamic> body) async {
     final url = Uri.parse('${AppConfig.apiBaseUrl}$path');
-    final response = await http.post(url,
-      headers: _headers,
-      body: json.encode(body)
-    );
-    
+    final response =
+        await http.post(url, headers: _headers, body: json.encode(body));
+
     return _processResponse(response);
   }
 
@@ -46,16 +44,17 @@ class ApiClient {
   // 응답처리
   dynamic _processResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      return json.decode(response.body);  // Json 문자열 -> Dart 객체 (Map/List)
+      return json.decode(response.body); // Json 문자열 -> Dart 객체 (Map/List)
     } else if (response.statusCode == 409) {
-      return json.decode(response.body);  // 충돌은 에러로 간주 하지 않음.
-    }
-     else {
-      throw Exception('API 오류: ${response.statusCode} ${response.reasonPhrase}');
+      return json.decode(response.body); // 충돌은 에러로 간주 하지 않음.
+    } else {
+      throw Exception(
+          'API 오류: ${response.statusCode} ${response.reasonPhrase}');
     }
   }
 
+  //
   void setToken(String token) {
-    _headers['Authorization'] = 'Bearer $token';  
+    _headers['Authorization'] = 'Bearer $token';
   }
 }
