@@ -107,6 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildFeedItem(int index) {
     final item = _feedItems[index];
     final String type = item['type'] as String? ?? 'post';
+    Shared.log('피드 아이템 username: ${item['username']}');
 
     if (type == 'showcase') {
       final List<Map<String, dynamic>> items = _extractShowcaseItems(item);

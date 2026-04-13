@@ -21,6 +21,11 @@ class MoTopBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.transparent,
       foregroundColor: Colors.white,
       elevation: 0,
+      bottom: PreferredSize(preferredSize: const Size.fromHeight(1),
+       child: Container(
+        height: 1,
+        color: Colors.white.withValues(alpha: 0.2),
+       )),
       leading: _buildLeading(),
       title: _buildTitle(context),
       actions: _buildActions(context),
